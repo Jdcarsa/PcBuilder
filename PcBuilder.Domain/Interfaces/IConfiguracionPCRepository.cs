@@ -2,7 +2,7 @@ using PcBuilder.Domain.Entities;
 
 namespace PcBuilder.Domain.Interfaces;
 
-public interface IConfiguracionPcRespository
+public interface IConfiguracionPCRepository
 {
     Task<ConfiguracionPC?> ObtenerPorIdAsync(long id, CancellationToken ct = default);
     Task<List<ConfiguracionPC>> ObtenerPorUsuarioAsync(long usuarioId, CancellationToken ct = default);

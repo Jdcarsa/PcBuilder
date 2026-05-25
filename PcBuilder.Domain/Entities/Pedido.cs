@@ -1,3 +1,4 @@
+// Pedido.cs
 using PcBuilder.Domain.Enums;
 
 namespace PcBuilder.Domain.Entities;
@@ -22,11 +23,11 @@ public class Pedido
 
     public static Pedido Crear(long usuarioId, string direccionEnvio, string? notas = null)
     {
-        if (string.IsNullOrWhiteSpace(direccionEnvio)) throw new ArgumentException("La dirección es requerida.");
+        if (string.IsNullOrWhiteSpace(direccionEnvio))
+            throw new ArgumentException("La dirección es requerida.");
 
         return new Pedido
         {
-            Id = 0,
             NumeroPedido = $"PCB-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}",
             UsuarioId = usuarioId,
             Estado = EstadoPedido.Borrador,
@@ -84,7 +85,8 @@ public class Pedido
         if (Estado != EstadoPedido.EnProcesamiento)
             throw new InvalidOperationException("El pedido debe estar en procesamiento.");
 
-        if (string.IsNullOrWhiteSpace(numeroGuia)) throw new ArgumentException("El número de guía es requerido.");
+        if (string.IsNullOrWhiteSpace(numeroGuia))
+            throw new ArgumentException("El número de guía es requerido.");
 
         Estado = EstadoPedido.Enviado;
         NumeroGuia = numeroGuia.Trim();
@@ -107,26 +109,4 @@ public class Pedido
     }
 
     public bool PuedeModificarse() => Estado == EstadoPedido.Borrador;
-}
-
-public class ItemPedido
-{
-    public long ComponenteId { get; private set; }
-    public Componente Componente { get; private set; }
-    public string NombreComponente { get; private set; }
-    public decimal PrecioUnitario { get; private set; }
-    public int Cantidad { get; private set; }
-
-    public decimal Subtotal => PrecioUnitario * Cantidad;
-
-    internal ItemPedido(Componente componente, int cantidad)
-    {
-        ComponenteId = componente.Id;
-        Componente = componente;
-        NombreComponente = componente.Nombre;
-        PrecioUnitario = componente.Precio;
-        Cantidad = cantidad;
-    }
-
-    internal void AumentarCantidad(int cantidad) => Cantidad += cantidad;
 }

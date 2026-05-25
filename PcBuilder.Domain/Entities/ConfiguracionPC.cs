@@ -24,7 +24,6 @@ public class ConfiguracionPC
 
         return new ConfiguracionPC
         {
-            Id = 0,
             UsuarioId = usuarioId,
             Nombre = nombre.Trim(),
             EstaFinalizada = false,
@@ -110,21 +109,3 @@ public class ConfiguracionPC
         Nombre = nuevoNombre.Trim();
     }
 }
-
-public class ItemConfiguracion
-{
-    public long ComponenteId { get; private set; }
-    public Componente Componente { get; private set; }
-    public int Cantidad { get; private set; }
-
-    internal ItemConfiguracion(Componente componente, int cantidad)
-    {
-        Componente = componente;
-        ComponenteId = componente.Id;
-        Cantidad = cantidad;
-    }
-
-    internal void AumentarCantidad(int cantidad) => Cantidad += cantidad;
-}
-
-public record ResultadoValidacion(bool EsValida, IReadOnlyList<string> Errores);
