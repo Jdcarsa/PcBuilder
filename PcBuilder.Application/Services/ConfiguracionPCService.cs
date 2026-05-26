@@ -6,9 +6,7 @@ using PcBuilder.Domain.Interfaces;
 
 namespace PcBuilder.Application.Services;
 
-public class ConfiguracionPCService(
-    IConfiguracionPCRepository configuracionRepo,
-    IComponenteRepository componenteRepo,
+public class ConfiguracionPCService(IConfiguracionPCRepository configuracionRepo, IComponenteRepository componenteRepo,
     IUnitOfWork uow) : IConfiguracionPCService
 {
     public async Task<List<ConfiguracionPCResponse>> ObtenerPorUsuarioAsync(long usuarioId, CancellationToken ct = default)

@@ -21,17 +21,8 @@ public class Componente
 
     private Componente() { }
 
-    public static Componente Crear(
-        string nombre,
-        string descripcion,
-        string sku,
-        string marca,
-        string modelo,
-        CategoriaComponente categoria,
-        decimal precio,
-        int stock,
-        int consumoWatts,
-        string? urlImagen = null)
+    public static Componente Crear(string nombre, string descripcion, string sku, string marca, string modelo,
+        CategoriaComponente categoria, decimal precio, int stock, int consumoWatts, string? urlImagen = null)
     {
         if (string.IsNullOrWhiteSpace(nombre)) throw new ArgumentException("El nombre es requerido.");
         if (precio < 0) throw new ArgumentException("El precio no puede ser negativo.");

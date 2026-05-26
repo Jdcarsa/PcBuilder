@@ -7,9 +7,7 @@ using PcBuilder.Domain.Interfaces;
 
 namespace PcBuilder.Application.Services;
 
-public class ComponenteService(
-    IComponenteRepository componenteRepo,
-    IUnitOfWork uow) : IComponenteService
+public class ComponenteService(IComponenteRepository componenteRepo, IUnitOfWork uow) : IComponenteService
 {
     public async Task<List<ComponenteResponse>> ObtenerTodosAsync(CancellationToken ct = default)
     {
@@ -42,17 +40,8 @@ public class ComponenteService(
 
     public async Task<ComponenteResponse> CrearAsync(CrearComponenteRequest request, CancellationToken ct = default)
     {
-        var componente = Componente.Crear(
-            request.Nombre,
-            request.Descripcion,
-            request.Sku,
-            request.Marca,
-            request.Modelo,
-            request.Categoria,
-            request.Precio,
-            request.Stock,
-            request.ConsumoWatts,
-            request.UrlImagen);
+        var componente = Componente.Crear(request.Nombre, request.Descripcion, request.Sku, request.Marca,
+            request.Modelo, request.Categoria, request.Precio, request.Stock, request.ConsumoWatts, request.UrlImagen);
 
         await componenteRepo.AgregarAsync(componente, ct);
         await uow.GuardarCambiosAsync(ct);

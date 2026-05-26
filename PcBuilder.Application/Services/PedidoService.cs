@@ -6,11 +6,8 @@ using PcBuilder.Domain.Interfaces;
 
 namespace PcBuilder.Application.Services;
 
-public class PedidoService(
-    IPedidoRepository pedidoRepo,
-    IComponenteRepository componenteRepo,
-    IConfiguracionPCRepository configuracionRepo,
-    IUnitOfWork uow) : IPedidoService
+public class PedidoService(IPedidoRepository pedidoRepo, IComponenteRepository componenteRepo,
+    IConfiguracionPCRepository configuracionRepo, IUnitOfWork uow) : IPedidoService
 {
     public async Task<List<PedidoResponse>> ObtenerPorUsuarioAsync(long usuarioId, CancellationToken ct = default)
     {

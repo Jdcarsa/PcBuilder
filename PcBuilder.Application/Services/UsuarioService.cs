@@ -7,10 +7,7 @@ using PcBuilder.Infrastructure.Services;
 
 namespace PcBuilder.Application.Services;
 
-public class UsuarioService(
-    IUsuarioRepository usuarioRepo,
-    IUnitOfWork uow,
-    IPasswordHasher passwordHasher,
+public class UsuarioService(IUsuarioRepository usuarioRepo, IUnitOfWork uow, IPasswordHasher passwordHasher,
     IJwtService jwtService) : IUsuarioService
 {
     public async Task<UsuarioResponse> ObtenerPorIdAsync(long id, CancellationToken ct = default)

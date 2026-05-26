@@ -1,21 +1,10 @@
 namespace PcBuilder.Application.DTOs;
 
-public record ConfiguracionPCResponse(
-    long Id,
-    string Nombre,
-    bool EstaFinalizada,
-    decimal PrecioTotal,
-    int ConsumoTotalWatts,
-    DateTime CreadoEn,
-    IReadOnlyList<ItemConfiguracionResponse> Items);
+public record ConfiguracionPCResponse(long Id, string Nombre, bool EstaFinalizada, decimal PrecioTotal,
+    int ConsumoTotalWatts, DateTime CreadoEn, IReadOnlyList<ItemConfiguracionResponse> Items);
 
-public record ItemConfiguracionResponse(
-    long ComponenteId,
-    string NombreComponente,
-    string Categoria,
-    decimal PrecioUnitario,
-    int Cantidad,
-    decimal Subtotal);
+public record ItemConfiguracionResponse(long ComponenteId, string NombreComponente, string Categoria, decimal PrecioUnitario,
+    int Cantidad, decimal Subtotal);
 
 public record CrearConfiguracionRequest(string Nombre);
 

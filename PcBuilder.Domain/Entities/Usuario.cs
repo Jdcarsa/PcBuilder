@@ -17,11 +17,7 @@ public class Usuario
 
     private Usuario() { }
 
-    public static Usuario Crear(
-        string nombre,
-        string apellido,
-        string email,
-        string passwordHash,
+    public static Usuario Crear(string nombre, string apellido, string email, string passwordHash,
         RolUsuario rol = RolUsuario.Cliente)
     {
         if (string.IsNullOrWhiteSpace(nombre)) throw new ArgumentException("El nombre es requerido.");
