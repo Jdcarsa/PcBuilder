@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PcBuilder.Domain.Entities;
 
+namespace PcBuilder.Infrastructure.Data.Configurations;
+
 public class ConfiguracionPCConfiguration : IEntityTypeConfiguration<ConfiguracionPC>
 {
     public void Configure(EntityTypeBuilder<ConfiguracionPC> builder)
