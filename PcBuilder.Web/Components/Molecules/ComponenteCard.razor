@@ -20,15 +20,15 @@
         <h6 class="card-componente-nombre mt-2">@Componente.Nombre</h6>
         <p class="card-componente-marca">@Componente.Marca · @Componente.Modelo</p>
         <div class="card-componente-footer">
-            <PrecioTexto Valor="@Componente.Precio" Grande="true" Clase="text-naranja" />
-            <AppButton
-                Variante="@(EnCarrito ? "outline-naranja" : "naranja")"
-                Tamaño="sm"
-                OnClick="@(() => OnAgregarCarrito.InvokeAsync(Componente))"
-                Disabled="@(!Componente.TieneStock)">
-                <i class="bi @(EnCarrito ? "bi-cart-check" : "bi-cart-plus") me-1"></i>
-                @(EnCarrito ? "En carrito" : "Agregar")
-            </AppButton>
+            <PrecioTexto Valor="@Componente.Precio" Grande="true" Clase="text-naranja fs-6" />
+            <button class="btn btn-naranja btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                    style="width:36px;height:36px;flex-shrink:0"
+                    @onclick:stopPropagation="true"
+                    @onclick="() => OnAgregarCarrito.InvokeAsync(Componente)"
+                    disabled="@(!Componente.TieneStock)"
+                    title="@(EnCarrito ? "En carrito" : "Agregar al carrito")">
+                <i class="bi @(EnCarrito ? "bi-cart-check" : "bi-cart-plus")"></i>
+            </button>
         </div>
         @if (!Componente.TieneStock)
         {

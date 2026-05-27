@@ -40,15 +40,27 @@ body { background: var(--bg); font-family: 'Segoe UI', sans-serif; }
 .strip-armar { border-color: #e8e8e8 !important; }
 
 /* Card componente */
-.card-componente            { background: #fff; border: 1px solid #e8e8e8; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.card-componente {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
 .card-componente:hover      { border-color: var(--naranja); box-shadow: 0 2px 12px rgba(255,109,0,.08); }
-.card-componente-img        { height: 140px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #f0f0f0; padding: 1rem; }
+.card-componente-img        { height: 140px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #f0f0f0; padding: 1rem; flex-shrink: 0; }
 .card-componente-img img    { max-height: 120px; max-width: 100%; object-fit: contain; }
 .card-componente-placeholder{ font-size: 2.5rem; color: #ddd; }
-.card-componente-body       { padding: 1rem; }
-.card-componente-nombre     { font-size: .85rem; font-weight: 700; line-height: 1.3; margin-bottom: .2rem; }
-.card-componente-marca      { font-size: .73rem; color: #aaa; margin-bottom: .75rem; }
-.card-componente-footer     { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.card-componente-body       { padding: .875rem; display: flex; flex-direction: column; flex: 1; }
+.card-componente-nombre     { font-size: .85rem; font-weight: 700; line-height: 1.3; margin-bottom: .2rem;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card-componente-marca      { font-size: .73rem; color: #aaa; margin-bottom: .75rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-componente-footer     { display: flex; align-items: center; justify-content: space-between;
+    gap: .5rem; margin-top: auto; padding-top: .5rem; }
+
 
 /* Carrito item */
 .carrito-item           { display: flex; align-items: center; justify-content: space-between; padding: .85rem 1.25rem; flex-wrap: wrap; gap: .5rem; }

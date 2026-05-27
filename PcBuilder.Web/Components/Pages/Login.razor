@@ -1,3 +1,4 @@
+@* Pages/Login.razor *@
 @page "/login"
 @using PcBuilder.Application.DTOs
 @using PcBuilder.Web.Components.Atoms
@@ -10,7 +11,9 @@
 
 <div class="container py-5" style="max-width:440px">
     <div class="text-center mb-4">
-        <h4 class="fw-black text-uppercase">PC<span class="text-naranja">Builder</span></h4>
+        <a href="/" class="text-decoration-none">
+            <h4 class="fw-black text-uppercase">PC<span class="text-naranja">Builder</span></h4>
+        </a>
         <p class="text-muted small">@(_modoRegistro ? "Crea tu cuenta" : "Ingresa a tu cuenta")</p>
     </div>
 
@@ -27,13 +30,14 @@
                           Valor="@_password" ValorChanged="v => _password = v" />
 
                 <AppButton Variante="naranja" Clase="w-100 mt-2"
-                           OnClick="HandleLogin" Cargando="@_cargando" Type="submit">
+                           OnClick="HandleLogin" Cargando="@_cargando">
                     Ingresar
                 </AppButton>
 
                 <p class="text-center small text-muted mt-3 mb-0">
                     ¿No tienes cuenta?
-                    <button class="btn btn-link btn-sm p-0 text-naranja" @onclick="() => _modoRegistro = true">
+                    <button class="btn btn-link btn-sm p-0 text-naranja"
+                            @onclick="() => { _modoRegistro = true; _error = _exito = string.Empty; }">
                         Regístrate
                     </button>
                 </p>
@@ -56,13 +60,14 @@
                           Valor="@_password" ValorChanged="v => _password = v" />
 
                 <AppButton Variante="naranja" Clase="w-100 mt-2"
-                           OnClick="HandleRegistro" Cargando="@_cargando" Type="submit">
+                           OnClick="HandleRegistro" Cargando="@_cargando">
                     Crear cuenta
                 </AppButton>
 
                 <p class="text-center small text-muted mt-3 mb-0">
                     ¿Ya tienes cuenta?
-                    <button class="btn btn-link btn-sm p-0 text-naranja" @onclick="() => _modoRegistro = false">
+                    <button class="btn btn-link btn-sm p-0 text-naranja"
+                            @onclick="() => { _modoRegistro = false; _error = _exito = string.Empty; }">
                         Ingresar
                     </button>
                 </p>
@@ -76,12 +81,18 @@
 
     private bool _modoRegistro;
     private bool _cargando;
-    private string _email = string.Empty;
+    private string _email    = string.Empty;
     private string _password = string.Empty;
-    private string _nombre = string.Empty;
+    private string _nombre   = string.Empty;
     private string _apellido = string.Empty;
-    private string _error = string.Empty;
-    private string _exito = string.Empty;
+    private string _error    = string.Empty;
+    private string _exito    = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        if (Sesion.EstaAutenticado)
+            Nav.NavigateTo(ReturnUrl ?? "/");
+    }
 
     private async Task HandleLogin()
     {
@@ -89,14 +100,14 @@
         _cargando = true;
         try
         {
-            var resultado = await Api.PostAsync<LoginResponse>("/api/auth/login", new LoginRequest(_email, _password));
-            Sesion.IniciarSesion(resultado);
+            var resultado = await Api.PostAsync<LoginResponse>(
+                "/api/auth/login",
+                new LoginRequest(_email, _password));
+
+            Sesion.IniciarSesion(resultado!);
             Nav.NavigateTo(ReturnUrl ?? "/");
         }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
-        }
+        catch (Exception ex) { _error = "Credenciales inválidas."; }
         finally { _cargando = false; }
     }
 
@@ -106,14 +117,15 @@
         _cargando = true;
         try
         {
-            await Api.PostAsync("/api/auth/registro", new RegistrarUsuarioRequest(_nombre, _apellido, _email, _password));
+            await Api.PostAsync<UsuarioResponse>(
+                "/api/auth/registro",
+                new RegistrarUsuarioRequest(_nombre, _apellido, _email, _password));
+
             _exito = "Cuenta creada. Ahora puedes ingresar.";
             _modoRegistro = false;
+            _password = string.Empty;
         }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
-        }
+        catch (Exception ex) { _error = ex.Message; }
         finally { _cargando = false; }
     }
 }

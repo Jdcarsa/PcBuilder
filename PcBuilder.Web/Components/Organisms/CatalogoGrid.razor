@@ -26,7 +26,7 @@
                         Componente="@componente"
                         EnCarrito="@Carrito.Contiene(componente.Id)"
                         OnAgregarCarrito="@AgregarAlCarrito"
-                        OnVerDetalle="@(id => Nav.NavigateTo($"/componente/{id}"))" />
+                        OnVerDetalle="@(id => ManejarVerDetalle(componente, id))" />
                 </div>
             }
         </div>
@@ -37,6 +37,9 @@
     [Parameter, EditorRequired] public List<ComponenteResponse> Componentes { get; set; } = [];
     [Parameter] public bool Cargando { get; set; }
 
+    @* Si tiene valor, al hacer clic selecciona el componente en vez de navegar al detalle *@
+    [Parameter] public EventCallback<ComponenteResponse> OnSeleccionar { get; set; }
+
     [Inject] private CarritoService Carrito { get; set; } = default!;
     [Inject] private NavigationManager Nav { get; set; } = default!;
 
@@ -44,5 +47,13 @@
     {
         Carrito.Agregar(componente);
         StateHasChanged();
+    }
+
+    private void ManejarVerDetalle(ComponenteResponse componente, long id)
+    {
+        if (OnSeleccionar.HasDelegate)
+            OnSeleccionar.InvokeAsync(componente);
+        else
+            Nav.NavigateTo($"/componente/{id}");
     }
 }
