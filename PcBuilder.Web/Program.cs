@@ -18,7 +18,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddScoped<PcBuilder.Web.Services.CarritoService>();
 builder.Services.AddScoped<PcBuilder.Web.Services.SesionService>();
 builder.Services.AddHttpClient<PcBuilder.Web.Services.ApiClient>(client =>
-    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7001/"));
+    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "/"));
 
 var jwtConfig = builder.Configuration.GetSection("Jwt");
 var secretKey = Encoding.UTF8.GetBytes(jwtConfig["Key"]!);
