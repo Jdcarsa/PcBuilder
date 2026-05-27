@@ -1,0 +1,186 @@
+@* Pages/ArmarPC.razor *@
+@page "/armar"
+@using PcBuilder.Application.DTOs
+@using PcBuilder.Application.Interfaces
+@using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Components.Molecules
+@using PcBuilder.Web.Components.Organisms
+@using PcBuilder.Web.Services
+@inject IComponenteService ComponenteService
+@inject IConfiguracionPCService ConfiguracionService
+@inject SesionService Sesion
+@inject CarritoService Carrito
+@inject NavigationManager Nav
+
+<PageTitle>Armar PC — PcBuilder</PageTitle>
+
+<div class="container-xl py-4">
+    <h4 class="fw-black text-uppercase mb-1">Armar PC</h4>
+    <p class="text-muted small mb-4">Selecciona cada componente. Te avisamos si hay incompatibilidades.</p>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            @if (_slotActivo is not null)
+            {
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                        <span class="fw-bold small text-uppercase">
+                            Eligiendo: <span class="text-naranja">@_slotActivo</span>
+                        </span>
+                        <button class="btn btn-link btn-sm text-muted p-0"
+                                @onclick="() => _slotActivo = null">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <BuscadorFiltro
+                            Termino="@_termino"
+                            OnTerminoChanged="v => { _termino = v; FiltrarPorSlot(); }" />
+                        <div class="mt-3">
+                            <CatalogoGrid Componentes="@_componentesFiltrados" Cargando="@_cargando" />
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted border rounded">
+                    <i class="bi bi-arrow-right-circle display-4 d-block mb-3 text-naranja"></i>
+                    <p>Haz clic en <strong>Elegir</strong> en cualquier slot para seleccionar un componente.</p>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <div class="mb-3">
+                <AppInput Label="Nombre de la configuración"
+                          Placeholder="Ej: PC Gamer Ryzen 7"
+                          Valor="@_nombreConfig"
+                          ValorChanged="v => _nombreConfig = v" />
+            </div>
+            <ArmadorPanel
+                Slots="@_slots"
+                NombreConfig="@_nombreConfig"
+                Total="@_total"
+                ConsumoWatts="@_consumoWatts"
+                Errores="@_errores"
+                Guardando="@_guardando"
+                OnSeleccionarSlot="ActivarSlot"
+                OnRemoverComponente="RemoverDelSlot"
+                OnFinalizar="Finalizar" />
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly List<ArmadorPanel.SlotInfo> _slots =
+    [
+        new() { Categoria = "Procesador",     Icono = "bi-cpu",          Requerido = true  },
+        new() { Categoria = "PlacaMadre",     Icono = "bi-motherboard",  Requerido = true  },
+        new() { Categoria = "MemoriaRam",     Icono = "bi-memory",       Requerido = true  },
+        new() { Categoria = "Almacenamiento", Icono = "bi-device-hdd",   Requerido = true  },
+        new() { Categoria = "TarjetaGrafica", Icono = "bi-gpu-card",     Requerido = false },
+        new() { Categoria = "FuentePoder",    Icono = "bi-plug",         Requerido = true  },
+        new() { Categoria = "Gabinete",       Icono = "bi-pc-display",   Requerido = false },
+        new() { Categoria = "Refrigeracion",  Icono = "bi-thermometer",  Requerido = false },
+    ];
+
+    private List<ComponenteResponse> _todosComponentes = [];
+    private List<ComponenteResponse> _componentesFiltrados = [];
+    private string? _slotActivo;
+    private string _termino = string.Empty;
+    private string _nombreConfig = string.Empty;
+    private bool _cargando;
+    private bool _guardando;
+    private List<string> _errores = [];
+
+    private decimal _total => _slots.Sum(s => s.Componente?.Precio ?? 0);
+    private int _consumoWatts => _slots.Sum(s =>
+        s.Componente is not null ? 50 : 0); // simplificado, idealmente vendría del DTO
+
+    protected override async Task OnInitializedAsync()
+    {
+        _cargando = true;
+        _todosComponentes = await ComponenteService.ObtenerTodosAsync();
+        _cargando = false;
+        ValidarConfig();
+    }
+
+    private void ActivarSlot(string categoria)
+    {
+        _slotActivo = categoria;
+        _termino = string.Empty;
+        FiltrarPorSlot();
+    }
+
+    private void FiltrarPorSlot()
+    {
+        _componentesFiltrados = _todosComponentes
+            .Where(c => c.Categoria == _slotActivo &&
+                        (string.IsNullOrWhiteSpace(_termino) ||
+                         c.Nombre.Contains(_termino, StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+    }
+
+    private void SeleccionarComponente(ComponenteResponse componente)
+    {
+        var slot = _slots.FirstOrDefault(s => s.Categoria == _slotActivo);
+        if (slot is not null)
+        {
+            slot.Componente = componente;
+            _slotActivo = null;
+            ValidarConfig();
+        }
+    }
+
+    private void RemoverDelSlot((string categoria, long id) args)
+    {
+        var slot = _slots.FirstOrDefault(s => s.Categoria == args.categoria);
+        if (slot is not null) slot.Componente = null;
+        ValidarConfig();
+    }
+
+    private void ValidarConfig()
+    {
+        _errores = _slots
+            .Where(s => s.Requerido && s.Componente is null)
+            .Select(s => $"Falta: {s.Categoria}")
+            .ToList();
+    }
+
+    private async Task Finalizar()
+    {
+        if (!Sesion.EstaAutenticado)
+        {
+            Nav.NavigateTo("/login?returnUrl=/armar");
+            return;
+        }
+
+        _guardando = true;
+        try
+        {
+            var config = await ConfiguracionService.CrearAsync(
+                Sesion.Usuario!.Id,
+                new(string.IsNullOrWhiteSpace(_nombreConfig) ? "Mi configuración" : _nombreConfig));
+
+            foreach (var slot in _slots.Where(s => s.Componente is not null))
+            {
+                await ConfiguracionService.AgregarComponenteAsync(
+                    config.Id,
+                    new(slot.Componente!.Id, 1));
+            }
+
+            await ConfiguracionService.FinalizarAsync(config.Id);
+
+            foreach (var slot in _slots.Where(s => s.Componente is not null))
+                Carrito.Agregar(slot.Componente!, 1);
+
+            Nav.NavigateTo("/carrito");
+        }
+        catch (Exception ex)
+        {
+            _errores = [ex.Message];
+        }
+        finally { _guardando = false; }
+    }
+}

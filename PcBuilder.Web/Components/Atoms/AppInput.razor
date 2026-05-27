@@ -1,0 +1,28 @@
+@* Atoms/AppInput.razor *@
+<div class="mb-3">
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <label class="form-label fw-semibold small">@Label</label>
+    }
+    <input
+        type="@Type"
+        class="form-control @(string.IsNullOrWhiteSpace(Error) ? "" : "is-invalid")"
+        placeholder="@Placeholder"
+        value="@Valor"
+        @oninput="e => ValorChanged.InvokeAsync(e.Value?.ToString())"
+        disabled="@Disabled" />
+    @if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="invalid-feedback">@Error</div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = string.Empty;
+    [Parameter] public string Placeholder { get; set; } = string.Empty;
+    [Parameter] public string Type { get; set; } = "text";
+    [Parameter] public string Valor { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ValorChanged { get; set; }
+    [Parameter] public string Error { get; set; } = string.Empty;
+    [Parameter] public bool Disabled { get; set; }
+}

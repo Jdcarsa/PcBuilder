@@ -1,0 +1,121 @@
+@* Pages/Login.razor *@
+@page "/login"
+@using PcBuilder.Application.DTOs
+@using PcBuilder.Application.Interfaces
+@using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Services
+@inject IUsuarioService UsuarioService
+@inject SesionService Sesion
+@inject NavigationManager Nav
+
+<PageTitle>Ingresar — PcBuilder</PageTitle>
+
+<div class="container py-5" style="max-width:440px">
+    <div class="text-center mb-4">
+        <h4 class="fw-black text-uppercase">PC<span class="text-naranja">Builder</span></h4>
+        <p class="text-muted small">@(_modoRegistro ? "Crea tu cuenta" : "Ingresa a tu cuenta")</p>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <Alerta Mensaje="@_error" Tipo="danger" />
+            <Alerta Mensaje="@_exito" Tipo="success" />
+
+            @if (!_modoRegistro)
+            {
+                <AppInput Label="Email" Type="email" Placeholder="tu@email.com"
+                          Valor="@_email" ValorChanged="v => _email = v" />
+                <AppInput Label="Contraseña" Type="password" Placeholder="••••••••"
+                          Valor="@_password" ValorChanged="v => _password = v" />
+
+                <AppButton Variante="naranja" Clase="w-100 mt-2"
+                           OnClick="HandleLogin" Cargando="@_cargando" Type="submit">
+                    Ingresar
+                </AppButton>
+
+                <p class="text-center small text-muted mt-3 mb-0">
+                    ¿No tienes cuenta?
+                    <button class="btn btn-link btn-sm p-0 text-naranja" @onclick="() => _modoRegistro = true">
+                        Regístrate
+                    </button>
+                </p>
+            }
+            else
+            {
+                <div class="row g-2">
+                    <div class="col-6">
+                        <AppInput Label="Nombre" Placeholder="Juan"
+                                  Valor="@_nombre" ValorChanged="v => _nombre = v" />
+                    </div>
+                    <div class="col-6">
+                        <AppInput Label="Apellido" Placeholder="Pérez"
+                                  Valor="@_apellido" ValorChanged="v => _apellido = v" />
+                    </div>
+                </div>
+                <AppInput Label="Email" Type="email" Placeholder="tu@email.com"
+                          Valor="@_email" ValorChanged="v => _email = v" />
+                <AppInput Label="Contraseña" Type="password" Placeholder="Mínimo 8 caracteres"
+                          Valor="@_password" ValorChanged="v => _password = v" />
+
+                <AppButton Variante="naranja" Clase="w-100 mt-2"
+                           OnClick="HandleRegistro" Cargando="@_cargando" Type="submit">
+                    Crear cuenta
+                </AppButton>
+
+                <p class="text-center small text-muted mt-3 mb-0">
+                    ¿Ya tienes cuenta?
+                    <button class="btn btn-link btn-sm p-0 text-naranja" @onclick="() => _modoRegistro = false">
+                        Ingresar
+                    </button>
+                </p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
+
+    private bool _modoRegistro;
+    private bool _cargando;
+    private string _email = string.Empty;
+    private string _password = string.Empty;
+    private string _nombre = string.Empty;
+    private string _apellido = string.Empty;
+    private string _error = string.Empty;
+    private string _exito = string.Empty;
+
+    private async Task HandleLogin()
+    {
+        _error = string.Empty;
+        _cargando = true;
+        try
+        {
+            var resultado = await UsuarioService.LoginAsync(new LoginRequest(_email, _password));
+            Sesion.IniciarSesion(resultado);
+            Nav.NavigateTo(ReturnUrl ?? "/");
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally { _cargando = false; }
+    }
+
+    private async Task HandleRegistro()
+    {
+        _error = string.Empty;
+        _cargando = true;
+        try
+        {
+            await UsuarioService.RegistrarAsync(new RegistrarUsuarioRequest(_nombre, _apellido, _email, _password));
+            _exito = "Cuenta creada. Ahora puedes ingresar.";
+            _modoRegistro = false;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally { _cargando = false; }
+    }
+}

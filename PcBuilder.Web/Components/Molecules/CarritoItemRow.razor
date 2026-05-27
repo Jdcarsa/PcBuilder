@@ -1,0 +1,33 @@
+@using PcBuilder.Web.Services
+@using PcBuilder.Web.Components.Atoms
+
+<div class="carrito-item">
+    <div class="carrito-item-info">
+        <span class="carrito-item-nombre">@Item.Nombre</span>
+        <small class="carrito-item-cat text-muted">@Item.Categoria</small>
+    </div>
+    <div class="carrito-item-controles">
+        <div class="input-group input-group-sm" style="width:110px">
+            <button class="btn btn-outline-secondary btn-sm"
+                    @onclick="() => OnCambiarCantidad.InvokeAsync((Item.ComponenteId, Item.Cantidad - 1))">
+                <i class="bi bi-dash"></i>
+            </button>
+            <span class="input-group-text bg-white px-2">@Item.Cantidad</span>
+            <button class="btn btn-outline-secondary btn-sm"
+                    @onclick="() => OnCambiarCantidad.InvokeAsync((Item.ComponenteId, Item.Cantidad + 1))">
+                <i class="bi bi-plus"></i>
+            </button>
+        </div>
+        <PrecioTexto Valor="@Item.Subtotal" Clase="text-naranja fw-bold ms-3" />
+        <button class="btn btn-link text-danger btn-sm ms-2 p-0"
+                @onclick="() => OnRemover.InvokeAsync(Item.ComponenteId)">
+            <i class="bi bi-trash3"></i>
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public CarritoItem Item { get; set; } = default!;
+    [Parameter] public EventCallback<(long, int)> OnCambiarCantidad { get; set; }
+    [Parameter] public EventCallback<long> OnRemover { get; set; }
+}

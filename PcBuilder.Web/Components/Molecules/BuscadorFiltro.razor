@@ -1,0 +1,32 @@
+@* Molecules/BuscadorFiltro.razor *@
+@using PcBuilder.Domain.Enums
+
+<div class="buscador-filtro d-flex gap-2 align-items-center flex-wrap">
+    <div class="input-group">
+        <span class="input-group-text bg-white border-end-0">
+            <i class="bi bi-search text-muted"></i>
+        </span>
+        <input type="text"
+               class="form-control border-start-0"
+               placeholder="Buscar componente..."
+               value="@Termino"
+               @oninput="e => OnTerminoChanged.InvokeAsync(e.Value?.ToString())" />
+    </div>
+
+    <select class="form-select w-auto"
+            value="@CategoriaSeleccionada"
+            @onchange="e => OnCategoriaChanged.InvokeAsync(e.Value?.ToString())">
+        <option value="">Todas las categorías</option>
+        @foreach (var cat in Enum.GetValues<CategoriaComponente>())
+        {
+            <option value="@cat">@cat</option>
+        }
+    </select>
+</div>
+
+@code {
+    [Parameter] public string Termino { get; set; } = string.Empty;
+    [Parameter] public string CategoriaSeleccionada { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> OnTerminoChanged { get; set; }
+    [Parameter] public EventCallback<string> OnCategoriaChanged { get; set; }
+}

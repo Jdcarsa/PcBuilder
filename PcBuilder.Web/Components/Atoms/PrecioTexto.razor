@@ -1,0 +1,13 @@
+@* Atoms/PrecioTexto.razor *@
+<span class="@CssClass">@Valor.ToString("C0", Cultura)</span>
+
+@code {
+    [Parameter, EditorRequired] public decimal Valor { get; set; }
+    [Parameter] public string Clase { get; set; } = "precio";
+    [Parameter] public bool Grande { get; set; }
+
+    private string CssClass => Grande ? $"{Clase} fs-5 fw-bold" : Clase;
+
+    private static readonly System.Globalization.CultureInfo Cultura =
+        new("es-CO");
+}

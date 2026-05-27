@@ -1,0 +1,81 @@
+@* Organisms/ArmadorPanel.razor *@
+@using PcBuilder.Application.DTOs
+@using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Components.Molecules
+
+<div class="armador-panel card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+        <span class="fw-bold text-uppercase small letter-spacing-1">
+            <i class="bi bi-motherboard me-2 text-naranja"></i>Mi configuración
+        </span>
+        @if (!string.IsNullOrWhiteSpace(NombreConfig))
+        {
+            <small class="text-muted">@NombreConfig</small>
+        }
+    </div>
+
+    <div class="card-body p-0">
+        @foreach (var slot in Slots)
+        {
+            <div class="border-bottom px-3 py-2">
+                <SlotComponente
+                    Categoria="@slot.Categoria"
+                    Icono="@slot.Icono"
+                    Requerido="@slot.Requerido"
+                    Seleccionado="@slot.Componente"
+                    OnSeleccionar="@(() => OnSeleccionarSlot.InvokeAsync(slot.Categoria))"
+                    OnRemover="@(id => OnRemoverComponente.InvokeAsync((slot.Categoria, id)))" />
+            </div>
+        }
+    </div>
+
+    <div class="card-footer bg-white">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="small text-muted">Total estimado</span>
+            <PrecioTexto Valor="@Total" Grande="true" Clase="text-naranja" />
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small text-muted">Consumo estimado</span>
+            <span class="small fw-semibold">@ConsumoWatts W</span>
+        </div>
+        @if (Errores.Any())
+        {
+            <ul class="list-unstyled mb-3">
+                @foreach (var error in Errores)
+                {
+                    <li class="small text-danger">
+                        <i class="bi bi-exclamation-circle me-1"></i>@error
+                    </li>
+                }
+            </ul>
+        }
+        <AppButton Variante="naranja" Clase="w-100"
+                   OnClick="OnFinalizar"
+                   Disabled="@Errores.Any()"
+                   Cargando="@Guardando">
+            <i class="bi bi-check2-circle me-2"></i>Finalizar configuración
+        </AppButton>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public List<SlotInfo> Slots { get; set; } = [];
+    [Parameter] public string NombreConfig { get; set; } = string.Empty;
+    [Parameter] public decimal Total { get; set; }
+    [Parameter] public int ConsumoWatts { get; set; }
+    [Parameter] public List<string> Errores { get; set; } = [];
+    [Parameter] public bool Guardando { get; set; }
+    [Parameter] public EventCallback<string> OnSeleccionarSlot { get; set; }
+    [Parameter] public EventCallback<(string, long)> OnRemoverComponente { get; set; }
+    [Parameter] public EventCallback OnFinalizar { get; set; }
+    
+    public class SlotInfo
+    {
+        public string Categoria { get; set; } = string.Empty;
+        public string Icono { get; set; } = "bi-puzzle";
+        public bool Requerido { get; set; } = true;
+        public ComponenteResponse? Componente { get; set; }
+    }
+}
+
+

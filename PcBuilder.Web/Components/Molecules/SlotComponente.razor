@@ -1,0 +1,42 @@
+@using PcBuilder.Application.DTOs
+@using PcBuilder.Web.Components.Atoms
+
+<div class="slot-componente @(Seleccionado is not null ? "slot-lleno" : "slot-vacio")">
+    <div class="slot-categoria">
+        <i class="bi @Icono me-2"></i>
+        <span>@Categoria</span>
+        @if (Requerido)
+        {
+            <span class="text-danger ms-1" title="Requerido">*</span>
+        }
+    </div>
+
+    @if (Seleccionado is not null)
+    {
+        <div class="slot-seleccionado">
+            <div class="slot-info">
+                <span class="slot-nombre">@Seleccionado.Nombre</span>
+                <PrecioTexto Valor="@Seleccionado.Precio" Clase="text-naranja small fw-bold" />
+            </div>
+            <button class="btn btn-link text-danger btn-sm p-0"
+                    @onclick="() => OnRemover.InvokeAsync(Seleccionado.Id)">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+    }
+    else
+    {
+        <AppButton Variante="outline-naranja" Tamaño="sm" OnClick="OnSeleccionar">
+            <i class="bi bi-plus-circle me-1"></i> Elegir
+        </AppButton>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Categoria { get; set; } = string.Empty;
+    [Parameter] public ComponenteResponse? Seleccionado { get; set; }
+    [Parameter] public bool Requerido { get; set; } = true;
+    [Parameter] public string Icono { get; set; } = "bi-puzzle";
+    [Parameter] public EventCallback OnSeleccionar { get; set; }
+    [Parameter] public EventCallback<long> OnRemover { get; set; }
+}

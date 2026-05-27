@@ -1,0 +1,96 @@
+@* Pages/Carrito.razor *@
+@page "/carrito"
+@using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Components.Molecules
+@using PcBuilder.Web.Services
+@inject CarritoService CarritoService
+@inject SesionService Sesion
+@inject NavigationManager Nav
+
+@implements IDisposable
+
+<PageTitle>Carrito — PcBuilder</PageTitle>
+
+<div class="container-xl py-4">
+    <h4 class="fw-black text-uppercase mb-4">Carrito</h4>
+
+    @if (!CarritoService.Items.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-cart3 display-4 d-block mb-3"></i>
+            <p class="mb-3">Tu carrito está vacío.</p>
+            <a href="/catalogo" class="btn btn-naranja text-uppercase fw-bold">Ver catálogo</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        @foreach (var item in CarritoService.Items)
+                        {
+                            <div class="border-bottom">
+                                <CarritoItemRow
+                                    Item="@item"
+                                    OnCambiarCantidad="@CambiarCantidad"
+                                    OnRemover="@Remover" />
+                            </div>
+                        }
+                    </div>
+                    <div class="card-footer bg-white text-end">
+                        <button class="btn btn-link text-danger btn-sm" @onclick="CarritoService.Limpiar">
+                            <i class="bi bi-trash3 me-1"></i>Vaciar carrito
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="fw-bold text-uppercase small letter-spacing-1 mb-3">Resumen</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Productos (@CarritoService.TotalItems)</span>
+                            <PrecioTexto Valor="@CarritoService.Total" />
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="fw-bold">Total</span>
+                            <PrecioTexto Valor="@CarritoService.Total" Grande="true" Clase="text-naranja" />
+                        </div>
+                        <AppButton Variante="naranja" Clase="w-100" OnClick="IrACheckout">
+                            <i class="bi bi-lock me-2"></i>
+                            Proceder al pago
+                        </AppButton>
+                        <a href="/catalogo" class="btn btn-link w-100 text-muted small mt-2">
+                            Seguir comprando
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    protected override void OnInitialized() =>
+        CarritoService.OnChange += StateHasChanged;
+
+    private void CambiarCantidad((long id, int cantidad) args) =>
+        CarritoService.CambiarCantidad(args.id, args.cantidad);
+
+    private void Remover(long id) =>
+        CarritoService.Remover(id);
+
+    private void IrACheckout()
+    {
+        if (!Sesion.EstaAutenticado)
+            Nav.NavigateTo("/login?returnUrl=/checkout");
+        else
+            Nav.NavigateTo("/checkout");
+    }
+
+    public void Dispose() =>
+        CarritoService.OnChange -= StateHasChanged;
+}

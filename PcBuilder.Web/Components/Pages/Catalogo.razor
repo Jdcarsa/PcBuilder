@@ -1,0 +1,79 @@
+@* Pages/Catalogo.razor *@
+@page "/catalogo"
+@using PcBuilder.Application.DTOs
+@using PcBuilder.Application.Interfaces
+@using PcBuilder.Domain.Enums
+@using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Components.Molecules
+@using PcBuilder.Web.Components.Organisms
+@inject IComponenteService ComponenteService
+
+<PageTitle>Catálogo — PcBuilder</PageTitle>
+
+<div class="container-xl py-4">
+    <div class="d-flex align-items-baseline justify-content-between mb-4 flex-wrap gap-2">
+        <h4 class="fw-black text-uppercase mb-0">Catálogo</h4>
+        <small class="text-muted">@_filtrados.Count componentes</small>
+    </div>
+
+    <BuscadorFiltro
+        Termino="@_termino"
+        CategoriaSeleccionada="@_categoria"
+        OnTerminoChanged="@OnTerminoChanged"
+        OnCategoriaChanged="@OnCategoriaChanged" />
+
+    <div class="mt-4">
+        <CatalogoGrid Componentes="@_filtrados" Cargando="@_cargando" />
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public string? Categoria { get; set; }
+
+    private List<ComponenteResponse> _todos = [];
+    private List<ComponenteResponse> _filtrados = [];
+    private string _termino = string.Empty;
+    private string _categoria = string.Empty;
+    private bool _cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _cargando = true;
+        _todos = await ComponenteService.ObtenerTodosAsync();
+
+        if (!string.IsNullOrWhiteSpace(Categoria))
+        {
+            _categoria = Categoria;
+        }
+
+        Filtrar();
+        _cargando = false;
+    }
+
+    private void OnTerminoChanged(string valor)
+    {
+        _termino = valor;
+        Filtrar();
+    }
+
+    private void OnCategoriaChanged(string valor)
+    {
+        _categoria = valor;
+        Filtrar();
+    }
+
+    private void Filtrar()
+    {
+        _filtrados = _todos.Where(c =>
+        {
+            var coincideTermino = string.IsNullOrWhiteSpace(_termino) ||
+                c.Nombre.Contains(_termino, StringComparison.OrdinalIgnoreCase) ||
+                c.Marca.Contains(_termino, StringComparison.OrdinalIgnoreCase);
+
+            var coincideCategoria = string.IsNullOrWhiteSpace(_categoria) ||
+                c.Categoria == _categoria;
+
+            return coincideTermino && coincideCategoria;
+        }).ToList();
+    }
+}

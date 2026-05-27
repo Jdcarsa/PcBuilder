@@ -1,0 +1,45 @@
+@* Molecules/ComponenteCard.razor *@
+@using PcBuilder.Application.DTOs
+@using PcBuilder.Web.Components.Atoms
+
+<div class="card-componente h-100" @onclick="() => OnVerDetalle.InvokeAsync(Componente.Id)">
+    <div class="card-componente-img">
+        @if (!string.IsNullOrWhiteSpace(Componente.UrlImagen))
+        {
+            <img src="@Componente.UrlImagen" alt="@Componente.Nombre" />
+        }
+        else
+        {
+            <div class="card-componente-placeholder">
+                <i class="bi bi-cpu"></i>
+            </div>
+        }
+    </div>
+    <div class="card-componente-body">
+        <CategoriaBadge Texto="@Componente.Categoria" Color="naranja-light" />
+        <h6 class="card-componente-nombre mt-2">@Componente.Nombre</h6>
+        <p class="card-componente-marca">@Componente.Marca · @Componente.Modelo</p>
+        <div class="card-componente-footer">
+            <PrecioTexto Valor="@Componente.Precio" Grande="true" Clase="text-naranja" />
+            <AppButton
+                Variante="@(EnCarrito ? "outline-naranja" : "naranja")"
+                Tamaño="sm"
+                OnClick="@(() => OnAgregarCarrito.InvokeAsync(Componente))"
+                Disabled="@(!Componente.TieneStock)">
+                <i class="bi @(EnCarrito ? "bi-cart-check" : "bi-cart-plus") me-1"></i>
+                @(EnCarrito ? "En carrito" : "Agregar")
+            </AppButton>
+        </div>
+        @if (!Componente.TieneStock)
+        {
+            <small class="text-danger"><i class="bi bi-x-circle me-1"></i>Sin stock</small>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ComponenteResponse Componente { get; set; } = default!;
+    [Parameter] public bool EnCarrito { get; set; }
+    [Parameter] public EventCallback<ComponenteResponse> OnAgregarCarrito { get; set; }
+    [Parameter] public EventCallback<long> OnVerDetalle { get; set; }
+}

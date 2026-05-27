@@ -1,0 +1,9 @@
+@* Atoms/CategoriaBadge.razor *@
+<span class="badge @CssClass">@Texto</span>
+
+@code {
+    [Parameter, EditorRequired] public string Texto { get; set; } = string.Empty;
+    [Parameter] public string Color { get; set; } = "secondary";
+
+    private string CssClass => $"bg-{Color} text-dark fw-semibold";
+}

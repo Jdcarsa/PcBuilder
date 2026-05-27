@@ -1,0 +1,9 @@
+<div class="d-flex justify-content-center align-items-center py-5">
+    <div class="spinner-border text-naranja" role="status" style="width:@Tamaño;height:@Tamaño">
+        <span class="visually-hidden">Cargando...</span>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Tamaño { get; set; } = "2.5rem";
+}

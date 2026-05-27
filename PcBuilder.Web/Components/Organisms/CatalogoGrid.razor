@@ -1,0 +1,48 @@
+@* Organisms/CatalogoGrid.razor *@
+@using PcBuilder.Application.DTOs
+@using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Components.Molecules
+@using PcBuilder.Web.Services
+
+<div class="catalogo-grid">
+    @if (Cargando)
+    {
+        <Spinner />
+    }
+    else if (!Componentes.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-search fs-1 d-block mb-3"></i>
+            <p>No se encontraron componentes.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-3">
+            @foreach (var componente in Componentes)
+            {
+                <div class="col">
+                    <ComponenteCard
+                        Componente="@componente"
+                        EnCarrito="@Carrito.Contiene(componente.Id)"
+                        OnAgregarCarrito="@AgregarAlCarrito"
+                        OnVerDetalle="@(id => Nav.NavigateTo($"/componente/{id}"))" />
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public List<ComponenteResponse> Componentes { get; set; } = [];
+    [Parameter] public bool Cargando { get; set; }
+
+    [Inject] private CarritoService Carrito { get; set; } = default!;
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+
+    private void AgregarAlCarrito(ComponenteResponse componente)
+    {
+        Carrito.Agregar(componente);
+        StateHasChanged();
+    }
+}

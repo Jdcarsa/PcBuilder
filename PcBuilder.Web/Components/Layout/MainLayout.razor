@@ -1,23 +1,23 @@
 ﻿@inherits LayoutComponentBase
+@using PcBuilder.Web.Components.Organisms
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu/>
+<NavBar />
+
+<main class="main-content">
+    @Body
+</main>
+
+<footer class="footer bg-white border-top py-4">
+    <div class="container-xl text-center">
+        <p class="small text-muted mb-0">
+            © @(DateTime.Today.Year) <strong>PC<span class="text-naranja">Builder</span></strong>
+            — Arma tu PC Gamer
+        </p>
     </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+</footer>
 
 <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
+    Ocurrió un error inesperado.
+    <a href="." class="reload">Recargar</a>
     <span class="dismiss">🗙</span>
 </div>
