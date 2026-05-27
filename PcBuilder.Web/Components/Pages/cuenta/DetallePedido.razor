@@ -1,0 +1,143 @@
+@page "/cuenta/pedidos/{Id:long}"
+@rendermode InteractiveServer
+@using PcBuilder.Application.DTOs
+@using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Services
+@inject ApiClient Api
+@inject SesionService Sesion
+@inject NavigationManager Nav
+
+<RedirectLogin ReturnUrl="/cuenta/pedidos" />
+<PageTitle>Pedido — PcBuilder</PageTitle>
+
+<div class="container py-4" style="max-width:700px">
+    <a href="/cuenta/pedidos" class="btn btn-link btn-sm text-muted p-0 mb-3">
+        <i class="bi bi-arrow-left me-1"></i>Volver a mis pedidos
+    </a>
+
+    @if (_cargando)
+    {
+        <Spinner />
+    }
+    else if (_pedido is null)
+    {
+        <Alerta Mensaje="Pedido no encontrado." Tipo="danger" />
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+            <div>
+                <h5 class="fw-black mb-0">@_pedido.NumeroPedido</h5>
+                <small class="text-muted">
+                    Realizado el @_pedido.CreadoEn.ToString("dd 'de' MMMM yyyy", _cultura)
+                </small>
+            </div>
+            <span class="badge @BadgeEstado(_pedido.Estado) px-3 py-2 fs-6">
+                @_pedido.Estado
+            </span>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
+                <i class="bi bi-box-seam me-2 text-naranja"></i>Productos
+            </div>
+            <div class="card-body p-0">
+                @foreach (var item in _pedido.Items)
+                {
+                    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                        <div>
+                            <p class="mb-0 small fw-semibold">@item.NombreComponente</p>
+                            <small class="text-muted">
+                                @item.PrecioUnitario.ToString("C0", _cultura) × @item.Cantidad
+                            </small>
+                        </div>
+                        <span class="fw-bold text-naranja">
+                            @item.Subtotal.ToString("C0", _cultura)
+                        </span>
+                    </div>
+                }
+                <div class="d-flex justify-content-between align-items-center px-3 py-3">
+                    <span class="fw-bold">Total</span>
+                    <span class="fw-black text-naranja fs-5">
+                        @_pedido.Total.ToString("C0", _cultura)
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
+                <i class="bi bi-geo-alt me-2 text-naranja"></i>Envío
+            </div>
+            <div class="card-body">
+                <p class="mb-1 small">@_pedido.DireccionEnvio</p>
+                @if (_pedido.NumeroGuia is not null)
+                {
+                    <p class="mb-0 small">
+                        <i class="bi bi-truck me-1 text-naranja"></i>
+                        Número de guía: <strong>@_pedido.NumeroGuia</strong>
+                    </p>
+                }
+                @if (_pedido.NotasCliente is not null)
+                {
+                    <p class="mb-0 small text-muted mt-1">
+                        Nota: @_pedido.NotasCliente
+                    </p>
+                }
+            </div>
+        </div>
+
+        @if (_pedido.Estado == "Borrador" || _pedido.Estado == "Confirmado")
+        {
+            <AppButton Variante="outline-danger" OnClick="Cancelar" Cargando="@_cancelando">
+                <i class="bi bi-x-circle me-1"></i>Cancelar pedido
+            </AppButton>
+            <Alerta Mensaje="@_error" Tipo="danger" />
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public long Id { get; set; }
+
+    private PedidoResponse? _pedido;
+    private bool _cargando = true;
+    private bool _cancelando;
+    private string _error = string.Empty;
+
+    private static readonly System.Globalization.CultureInfo _cultura =
+        new("es-CO");
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _pedido = await Api.GetAsync<PedidoResponse>($"/api/pedidos/{Id}");
+        }
+        catch { _pedido = null; }
+        finally { _cargando = false; }
+    }
+
+    private async Task Cancelar()
+    {
+        _error = string.Empty;
+        _cancelando = true;
+        try
+        {
+            _pedido = await Api.PostAsync<PedidoResponse>($"/api/pedidos/{Id}/cancelar");
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _cancelando = false; }
+    }
+
+    private static string BadgeEstado(string estado) => estado switch
+    {
+        "Borrador"        => "bg-secondary",
+        "Confirmado"      => "bg-primary",
+        "EnProcesamiento" => "bg-warning text-dark",
+        "Enviado"         => "bg-info text-dark",
+        "Entregado"       => "bg-success",
+        "Cancelado"       => "bg-danger",
+        _                 => "bg-secondary"
+    };
+}

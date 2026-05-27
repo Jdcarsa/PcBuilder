@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace PcBuilder.Web.Services;
@@ -32,6 +31,21 @@ public class ApiClient(HttpClient http, SesionService sesion)
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<T>(JsonOpts, ct);
     }
+    
+    public async Task PostAsync(string url, object body, CancellationToken ct = default)
+    {
+        AgregarToken();
+        var response = await http.PostAsJsonAsync(url, body, ct);
+        response.EnsureSuccessStatusCode();
+    }
+    
+    public async Task<T?> PostAsync<T>(string url, CancellationToken ct = default)
+    {
+        AgregarToken();
+        var response = await http.PostAsync(url, null, ct);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<T>(JsonOpts, ct);
+    }
 
     public async Task<T?> PutAsync<T>(string url, object body, CancellationToken ct = default)
     {
@@ -41,10 +55,10 @@ public class ApiClient(HttpClient http, SesionService sesion)
         return await response.Content.ReadFromJsonAsync<T>(JsonOpts, ct);
     }
 
-    public async Task PostAsync(string url, object body, CancellationToken ct = default)
+    public async Task PatchAsync(string url, object body, CancellationToken ct = default)
     {
         AgregarToken();
-        var response = await http.PostAsJsonAsync(url, body, ct);
+        var response = await http.PatchAsJsonAsync(url, body, ct);
         response.EnsureSuccessStatusCode();
     }
 

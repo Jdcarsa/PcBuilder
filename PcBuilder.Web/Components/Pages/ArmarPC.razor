@@ -1,13 +1,11 @@
 @* Pages/ArmarPC.razor *@
 @page "/armar"
 @using PcBuilder.Application.DTOs
-@using PcBuilder.Application.Interfaces
 @using PcBuilder.Web.Components.Atoms
 @using PcBuilder.Web.Components.Molecules
 @using PcBuilder.Web.Components.Organisms
 @using PcBuilder.Web.Services
-@inject IComponenteService ComponenteService
-@inject IConfiguracionPCService ConfiguracionService
+@inject ApiClient Api
 @inject SesionService Sesion
 @inject CarritoService Carrito
 @inject NavigationManager Nav
@@ -101,7 +99,7 @@
     protected override async Task OnInitializedAsync()
     {
         _cargando = true;
-        _todosComponentes = await ComponenteService.ObtenerTodosAsync();
+        _todosComponentes = await Api.GetAsync<List<ComponenteResponse>>("/api/componentes") ?? [];
         _cargando = false;
         ValidarConfig();
     }
@@ -159,18 +157,20 @@
         _guardando = true;
         try
         {
-            var config = await ConfiguracionService.CrearAsync(
-                Sesion.Usuario!.Id,
-                new(string.IsNullOrWhiteSpace(_nombreConfig) ? "Mi configuración" : _nombreConfig));
+            var config = await Api.PostAsync<ConfiguracionPCResponse>(
+                "/api/configuraciones",
+                new CrearConfiguracionRequest(
+                    string.IsNullOrWhiteSpace(_nombreConfig) ? "Mi configuración" : _nombreConfig));
 
             foreach (var slot in _slots.Where(s => s.Componente is not null))
             {
-                await ConfiguracionService.AgregarComponenteAsync(
-                    config.Id,
-                    new(slot.Componente!.Id, 1));
+                await Api.PostAsync<ConfiguracionPCResponse>(
+                    $"/api/configuraciones/{config!.Id}/componentes",
+                    new AgregarComponenteRequest(slot.Componente!.Id, 1));
             }
 
-            await ConfiguracionService.FinalizarAsync(config.Id);
+            await Api.PostAsync<ConfiguracionPCResponse>(
+                $"/api/configuraciones/{config!.Id}/finalizar");
 
             foreach (var slot in _slots.Where(s => s.Componente is not null))
                 Carrito.Agregar(slot.Componente!, 1);

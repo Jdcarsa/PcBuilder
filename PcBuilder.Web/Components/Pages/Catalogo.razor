@@ -1,12 +1,11 @@
 @* Pages/Catalogo.razor *@
 @page "/catalogo"
 @using PcBuilder.Application.DTOs
-@using PcBuilder.Application.Interfaces
-@using PcBuilder.Domain.Enums
-@using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Application.Services
 @using PcBuilder.Web.Components.Molecules
 @using PcBuilder.Web.Components.Organisms
-@inject IComponenteService ComponenteService
+@using PcBuilder.Web.Services
+@inject ApiClient Api
 
 <PageTitle>Catálogo — PcBuilder</PageTitle>
 
@@ -39,7 +38,7 @@
     protected override async Task OnInitializedAsync()
     {
         _cargando = true;
-        _todos = await ComponenteService.ObtenerTodosAsync();
+        _todos = await Api.GetAsync<List<ComponenteResponse>>("/api/componentes") ?? [];
 
         if (!string.IsNullOrWhiteSpace(Categoria))
         {

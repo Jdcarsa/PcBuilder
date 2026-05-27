@@ -1,0 +1,97 @@
+@page "/cuenta/pedidos"
+@rendermode InteractiveServer
+@using PcBuilder.Application.DTOs
+@using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Services
+@inject ApiClient Api
+@inject SesionService Sesion
+@inject NavigationManager Nav
+
+<RedirectLogin ReturnUrl="/cuenta/pedidos" />
+<PageTitle>Mis Pedidos — PcBuilder</PageTitle>
+
+<div class="container-xl py-4">
+    <h4 class="fw-black text-uppercase mb-4">Mis pedidos</h4>
+
+    @if (_cargando)
+    {
+        <Spinner />
+    }
+    else if (!_pedidos.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-box-seam display-4 d-block mb-3"></i>
+            <p class="mb-3">Aún no tienes pedidos.</p>
+            <a href="/catalogo" class="btn btn-naranja text-uppercase fw-bold">Ver catálogo</a>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex flex-column gap-3">
+            @foreach (var pedido in _pedidos)
+            {
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                            <div>
+                                <p class="fw-bold mb-0">@pedido.NumeroPedido</p>
+                                <small class="text-muted">
+                                    @pedido.CreadoEn.ToString("dd MMM yyyy")
+                                    · @pedido.Items.Count producto(s)
+                                </small>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="badge @BadgeEstado(pedido.Estado) px-3 py-2">
+                                    @pedido.Estado
+                                </span>
+                                <span class="fw-bold text-naranja">
+                                    @pedido.Total.ToString("C0", _cultura)
+                                </span>
+                                <a href="/cuenta/pedidos/@pedido.Id"
+                                   class="btn btn-outline-secondary btn-sm">
+                                    Ver detalle
+                                </a>
+                            </div>
+                        </div>
+
+                        @if (pedido.NumeroGuia is not null)
+                        {
+                            <div class="mt-2 small text-muted">
+                                <i class="bi bi-truck me-1"></i>
+                                Guía: <strong>@pedido.NumeroGuia</strong>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<PedidoResponse> _pedidos = [];
+    private bool _cargando = true;
+
+    private static readonly System.Globalization.CultureInfo _cultura = new("es-CO");
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _pedidos = await Api.GetAsync<List<PedidoResponse>>("/api/pedidos") ?? [];
+        }
+        catch { _pedidos = []; }
+        finally { _cargando = false; }
+    }
+
+    private static string BadgeEstado(string estado) => estado switch
+    {
+        "Borrador"        => "bg-secondary",
+        "Confirmado"      => "bg-primary",
+        "EnProcesamiento" => "bg-warning text-dark",
+        "Enviado"         => "bg-info text-dark",
+        "Entregado"       => "bg-success",
+        "Cancelado"       => "bg-danger",
+        _                 => "bg-secondary"
+    };
+}

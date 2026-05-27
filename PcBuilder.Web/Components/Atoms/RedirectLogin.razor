@@ -1,0 +1,13 @@
+@using PcBuilder.Web.Services
+@inject SesionService Sesion
+@inject NavigationManager Nav
+
+@code {
+    [Parameter, EditorRequired] public string ReturnUrl { get; set; } = "/";
+
+    protected override void OnInitialized()
+    {
+        if (!Sesion.EstaAutenticado)
+            Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(ReturnUrl)}");
+    }
+}

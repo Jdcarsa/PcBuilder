@@ -1,0 +1,134 @@
+@page "/checkout"
+@rendermode InteractiveServer
+@using PcBuilder.Application.DTOs
+@using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Services
+@inject ApiClient Api
+@inject SesionService Sesion
+@inject CarritoService Carrito
+@inject NavigationManager Nav
+@implements IDisposable
+
+<RedirectLogin ReturnUrl="/checkout" />>
+<PageTitle>Checkout — PcBuilder</PageTitle>
+
+<div class="container py-4" style="max-width:800px">
+    <h4 class="fw-black text-uppercase mb-4">Finalizar compra</h4>
+
+    @if (!Carrito.Items.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-cart-x display-4 d-block mb-3"></i>
+            <p>Tu carrito está vacío.</p>
+            <a href="/catalogo" class="btn btn-naranja">Ver catálogo</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
+                        <i class="bi bi-geo-alt me-2 text-naranja"></i>Dirección de envío
+                    </div>
+                    <div class="card-body">
+                        <Alerta Mensaje="@_error" Tipo="danger" />
+                        <AppInput Label="Dirección completa"
+                                  Placeholder="Calle 123 # 45-67, Barrio, Ciudad"
+                                  Valor="@_direccion"
+                                  ValorChanged="v => _direccion = v"
+                                  Error="@(_enviado && string.IsNullOrWhiteSpace(_direccion) ? "La dirección es requerida." : "")" />
+                        <AppInput Label="Notas para el pedido (opcional)"
+                                  Placeholder="Ej: Dejar en portería, llamar al llegar..."
+                                  Valor="@_notas"
+                                  ValorChanged="v => _notas = v" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
+                        <i class="bi bi-receipt me-2 text-naranja"></i>Resumen
+                    </div>
+                    <div class="card-body p-0">
+                        @foreach (var item in Carrito.Items)
+                        {
+                            <div class="d-flex justify-content-between px-3 py-2 border-bottom small">
+                                <span class="text-muted">@item.Nombre × @item.Cantidad</span>
+                                <span class="fw-semibold">@item.Subtotal.ToString("C0", _cultura)</span>
+                            </div>
+                        }
+                        <div class="d-flex justify-content-between px-3 py-3">
+                            <span class="fw-bold">Total</span>
+                            <span class="fw-black text-naranja fs-5">
+                                @Carrito.Total.ToString("C0", _cultura)
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <AppButton Variante="naranja" Clase="w-100"
+                                   OnClick="ConfirmarPedido"
+                                   Cargando="@_procesando">
+                            <i class="bi bi-check2-circle me-2"></i>Confirmar pedido
+                        </AppButton>
+                        <a href="/carrito" class="btn btn-link w-100 text-muted small mt-1">
+                            Volver al carrito
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private string _direccion = string.Empty;
+    private string _notas = string.Empty;
+    private bool _procesando;
+    private bool _enviado;
+    private string _error = string.Empty;
+
+    private static readonly System.Globalization.CultureInfo _cultura = new("es-CO");
+
+    protected override void OnInitialized()
+    {
+        Carrito.OnChange += StateHasChanged;
+    }
+
+    private async Task ConfirmarPedido()
+    {
+        _enviado = true;
+        _error = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(_direccion))
+            return;
+
+        _procesando = true;
+        try
+        {
+            var pedido = await Api.PostAsync<PedidoResponse>(
+                "/api/pedidos",
+                new CrearPedidoRequest(_direccion, string.IsNullOrWhiteSpace(_notas) ? null : _notas, null));
+
+            foreach (var item in Carrito.Items)
+            {
+                await Api.PostAsync<PedidoResponse>(
+                    $"/api/pedidos/{pedido!.Id}/items",
+                    new AgregarItemPedidoRequest(item.ComponenteId, item.Cantidad));
+            }
+
+            await Api.PostAsync<PedidoResponse>($"/api/pedidos/{pedido!.Id}/confirmar");
+
+            Carrito.Limpiar();
+            Nav.NavigateTo($"/cuenta/pedidos/{pedido!.Id}");
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally { _procesando = false; }
+    }
+
+    public void Dispose() => Carrito.OnChange -= StateHasChanged;
+}

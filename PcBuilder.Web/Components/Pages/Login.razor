@@ -1,10 +1,8 @@
-@* Pages/Login.razor *@
 @page "/login"
 @using PcBuilder.Application.DTOs
-@using PcBuilder.Application.Interfaces
 @using PcBuilder.Web.Components.Atoms
 @using PcBuilder.Web.Services
-@inject IUsuarioService UsuarioService
+@inject ApiClient Api
 @inject SesionService Sesion
 @inject NavigationManager Nav
 
@@ -91,7 +89,7 @@
         _cargando = true;
         try
         {
-            var resultado = await UsuarioService.LoginAsync(new LoginRequest(_email, _password));
+            var resultado = await Api.PostAsync<LoginResponse>("/api/auth/login", new LoginRequest(_email, _password));
             Sesion.IniciarSesion(resultado);
             Nav.NavigateTo(ReturnUrl ?? "/");
         }
@@ -108,7 +106,7 @@
         _cargando = true;
         try
         {
-            await UsuarioService.RegistrarAsync(new RegistrarUsuarioRequest(_nombre, _apellido, _email, _password));
+            await Api.PostAsync("/api/auth/registro", new RegistrarUsuarioRequest(_nombre, _apellido, _email, _password));
             _exito = "Cuenta creada. Ahora puedes ingresar.";
             _modoRegistro = false;
         }
