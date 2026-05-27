@@ -12,6 +12,7 @@ public class ItemPedido
 
     public decimal Subtotal => PrecioUnitario * Cantidad;
     
+    private ItemPedido() { }
 
     internal ItemPedido(Componente componente, int cantidad)
     {
