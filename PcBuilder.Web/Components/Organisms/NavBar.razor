@@ -58,16 +58,43 @@
                             @Sesion.Usuario?.Nombre
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                            <li><a class="dropdown-item" href="/cuenta/pedidos">
-                                <i class="bi bi-box-seam me-2"></i>Mis pedidos
-                            </a></li>
-                            <li><a class="dropdown-item" href="/cuenta/perfil">
-                                <i class="bi bi-person-gear me-2"></i>Mi perfil
-                            </a></li>
+                            @if (Sesion.EsAdministrador)
+                            {
+                                <li>
+                                    <a class="dropdown-item" href="/admin">
+                                        <i class="bi bi-grid-1x2 me-2"></i>Dashboard
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/admin/pedidos">
+                                        <i class="bi bi-box-seam me-2"></i>Pedidos
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/admin/componentes">
+                                        <i class="bi bi-cpu me-2"></i>Componentes
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li>
+                                    <a class="dropdown-item" href="/cuenta/pedidos">
+                                        <i class="bi bi-box-seam me-2"></i>Mis pedidos
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/cuenta/perfil">
+                                        <i class="bi bi-person-gear me-2"></i>Mi perfil
+                                    </a>
+                                </li>
+                            }
                             <li><hr class="dropdown-divider"></li>
-                            <li><button class="dropdown-item text-danger" @onclick="CerrarSesion">
-                                <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
-                            </button></li>
+                            <li>
+                                <button class="dropdown-item text-danger" @onclick="CerrarSesion">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
+                                </button>
+                            </li>
                         </ul>
                     </div>
                 }

@@ -1,0 +1,179 @@
+@* Pages/Admin/Dashboard.razor *@
+@page "/admin"
+@layout AdminLayout
+@using PcBuilder.Application.DTOs
+@using PcBuilder.Domain.Enums
+@using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Components.Layout
+@using PcBuilder.Web.Services
+@inject ApiClient Api
+
+<PageTitle>Dashboard — Admin PcBuilder</PageTitle>
+
+
+<div class="admin-page-header">
+    <h4 class="admin-page-title">Dashboard</h4>
+    <small class="text-muted">@DateTime.Now.ToString("dddd, dd 'de' MMMM yyyy", _cultura)</small>
+</div>
+
+@if (_cargando)
+{
+    <Spinner />
+}
+else
+{
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-card-icon bg-naranja-light text-naranja">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+                <div class="stat-card-value">@_totalPedidos</div>
+                <div class="stat-card-label">Pedidos totales</div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-card-icon" style="background:#fff3cd;color:#e6a817">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div class="stat-card-value">@_pedidosPendientes</div>
+                <div class="stat-card-label">Por procesar</div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-card-icon" style="background:#d1fae5;color:#059669">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+                <div class="stat-card-value">@_ingresos.ToString("C0", _cultura)</div>
+                <div class="stat-card-label">Ingresos totales</div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-card-icon" style="background:#fee2e2;color:#dc2626">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div class="stat-card-value">@_stockBajo</div>
+                <div class="stat-card-label">Stock bajo</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
+                    <i class="bi bi-clock-history me-2 text-naranja"></i>Últimos pedidos
+                </div>
+                <div class="card-body p-0">
+                    @if (!_ultimosPedidos.Any())
+                    {
+                        <p class="text-muted text-center py-4 small">Sin pedidos aún.</p>
+                    }
+                    else
+                    {
+                        @foreach (var pedido in _ultimosPedidos)
+                        {
+                            <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+                                <div>
+                                    <p class="mb-0 small fw-semibold">@pedido.NumeroPedido</p>
+                                    <small class="text-muted">@pedido.CreadoEn.ToString("dd MMM · HH:mm")</small>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge @BadgeEstado(pedido.Estado)">@pedido.Estado</span>
+                                    <span class="small fw-bold text-naranja">
+                                        @pedido.Total.ToString("C0", _cultura)
+                                    </span>
+                                    <a href="/admin/pedidos/@pedido.Id"
+                                       class="btn btn-outline-secondary btn-sm py-0 px-2">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="card-footer bg-white text-end">
+                    <a href="/admin/pedidos" class="btn btn-link btn-sm text-naranja p-0">
+                        Ver todos →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
+                    <i class="bi bi-exclamation-circle me-2 text-danger"></i>Stock bajo
+                </div>
+                <div class="card-body p-0">
+                    @if (!_componentesStockBajo.Any())
+                    {
+                        <p class="text-muted text-center py-4 small">Todo el stock está bien.</p>
+                    }
+                    else
+                    {
+                        @foreach (var c in _componentesStockBajo)
+                        {
+                            <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+                                <div>
+                                    <p class="mb-0 small fw-semibold">@c.Nombre</p>
+                                    <small class="text-muted">@c.Categoria</small>
+                                </div>
+                                <span class="badge bg-danger">@c.Stock unid.</span>
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="card-footer bg-white text-end">
+                    <a href="/admin/componentes" class="btn btn-link btn-sm text-naranja p-0">
+                        Ver componentes →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<PedidoResponse> _ultimosPedidos = [];
+    private List<ComponenteResponse> _componentesStockBajo = [];
+    private int _totalPedidos;
+    private int _pedidosPendientes;
+    private decimal _ingresos;
+    private int _stockBajo;
+    private bool _cargando = true;
+
+    private static readonly System.Globalization.CultureInfo _cultura = new("es-CO");
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var pedidos = await Api.GetAsync<List<PedidoResponse>>("/api/pedidos/todos") ?? [];
+            var componentes = await Api.GetAsync<List<ComponenteResponse>>("/api/componentes") ?? [];
+
+            _totalPedidos = pedidos.Count;
+            _pedidosPendientes = pedidos.Count(p => p.Estado == "Confirmado" || p.Estado == "EnProcesamiento");
+            _ingresos = pedidos.Where(p => p.Estado != "Cancelado").Sum(p => p.Total);
+            _ultimosPedidos = pedidos.OrderByDescending(p => p.CreadoEn).Take(5).ToList();
+
+            _componentesStockBajo = componentes.Where(c => c.Stock <= 5 && c.EstaActivo).ToList();
+            _stockBajo = _componentesStockBajo.Count;
+        }
+        catch { }
+        finally { _cargando = false; }
+    }
+
+    private static string BadgeEstado(string estado) => estado switch
+    {
+        "Confirmado"      => "bg-primary",
+        "EnProcesamiento" => "bg-warning text-dark",
+        "Enviado"         => "bg-info text-dark",
+        "Entregado"       => "bg-success",
+        "Cancelado"       => "bg-danger",
+        _                 => "bg-secondary"
+    };
+}

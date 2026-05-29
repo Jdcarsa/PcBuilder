@@ -1,0 +1,32 @@
+@* Pages/Admin/Modales/ModalPrecio.razor *@
+@using PcBuilder.Application.DTOs
+@using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Components.Molecules
+
+<ModalContenedor Titulo="Actualizar precio"
+                 Subtitulo="@Componente?.Nombre"
+                 Ancho="340px"
+                 OnCerrar="OnCerrar">
+    <Body>
+    <Alerta Mensaje="@Error" Tipo="danger" />
+    <AppInput Label="Nuevo precio (COP)" Type="number"
+              Valor="@Precio.ToString()"
+              ValorChanged="v => PrecioChanged.InvokeAsync(decimal.TryParse(v, out var p) ? p : 0)" />
+    <div class="d-flex justify-content-end gap-2 mt-2">
+        <button class="btn btn-outline-secondary btn-sm" @onclick="OnCerrar">Cancelar</button>
+        <AppButton Variante="naranja" Tamaño="sm" OnClick="OnGuardar" Cargando="@Guardando">
+            Guardar
+        </AppButton>
+    </div>
+    </Body>
+</ModalContenedor>
+
+@code {
+    [Parameter] public ComponenteResponse? Componente { get; set; }
+    [Parameter] public decimal Precio                 { get; set; }
+    [Parameter] public EventCallback<decimal> PrecioChanged { get; set; }
+    [Parameter] public string Error                   { get; set; } = string.Empty;
+    [Parameter] public bool Guardando                 { get; set; }
+    [Parameter] public EventCallback OnGuardar        { get; set; }
+    [Parameter] public EventCallback OnCerrar         { get; set; }
+}

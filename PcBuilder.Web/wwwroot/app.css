@@ -40,27 +40,15 @@ body { background: var(--bg); font-family: 'Segoe UI', sans-serif; }
 .strip-armar { border-color: #e8e8e8 !important; }
 
 /* Card componente */
-.card-componente {
-    background: #fff;
-    border: 1px solid #e8e8e8;
-    cursor: pointer;
-    transition: border-color .15s, box-shadow .15s;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
+.card-componente            { background: #fff; border: 1px solid #e8e8e8; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .card-componente:hover      { border-color: var(--naranja); box-shadow: 0 2px 12px rgba(255,109,0,.08); }
-.card-componente-img        { height: 140px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #f0f0f0; padding: 1rem; flex-shrink: 0; }
+.card-componente-img        { height: 140px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #f0f0f0; padding: 1rem; }
 .card-componente-img img    { max-height: 120px; max-width: 100%; object-fit: contain; }
 .card-componente-placeholder{ font-size: 2.5rem; color: #ddd; }
-.card-componente-body       { padding: .875rem; display: flex; flex-direction: column; flex: 1; }
-.card-componente-nombre     { font-size: .85rem; font-weight: 700; line-height: 1.3; margin-bottom: .2rem;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.card-componente-marca      { font-size: .73rem; color: #aaa; margin-bottom: .75rem;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-componente-footer     { display: flex; align-items: center; justify-content: space-between;
-    gap: .5rem; margin-top: auto; padding-top: .5rem; }
-
+.card-componente-body       { padding: 1rem; }
+.card-componente-nombre     { font-size: .85rem; font-weight: 700; line-height: 1.3; margin-bottom: .2rem; }
+.card-componente-marca      { font-size: .73rem; color: #aaa; margin-bottom: .75rem; }
+.card-componente-footer     { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
 
 /* Carrito item */
 .carrito-item           { display: flex; align-items: center; justify-content: space-between; padding: .85rem 1.25rem; flex-wrap: wrap; gap: .5rem; }
@@ -81,13 +69,261 @@ body { background: var(--bg); font-family: 'Segoe UI', sans-serif; }
 /* Precio */
 .precio { font-size: .88rem; font-weight: 700; color: var(--naranja); }
 
-#blazor-loading {
+/* ── Modal Login ─────────────────────────────────────────────────────────── */
+.modal-backdrop-custom {
     position: fixed;
     inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 1040;
+    animation: fadeIn .15s ease;
+}
+
+.modal-custom {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 420px;
+    z-index: 1050;
+    box-shadow: 0 20px 60px rgba(0,0,0,.15);
+    animation: slideUp .2s ease;
+}
+
+.modal-custom-header {
     display: flex;
-    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem 0;
+}
+
+.modal-custom-body {
+    padding: 1.25rem 1.5rem 1.5rem;
+}
+
+@keyframes fadeIn  { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slideUp { from { transform: translate(-50%, -45%); opacity: 0 }
+    to   { transform: translate(-50%, -50%); opacity: 1 } }
+
+/* ── Login Page ──────────────────────────────────────────────────────────── */
+.login-page {
+    min-height: 100vh;
+    display: flex;
     align-items: center;
     justify-content: center;
+    background: var(--bg);
+    padding: 1rem;
+}
+
+.login-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    padding: 2rem;
+    width: 100%;
+    max-width: 420px;
+}
+
+/* ── Base layout ─────────────────────────────────────────────────────────── */
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+.admin-sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: #111;
+    color: #ccc;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 200;
+    transition: transform .25s ease;
+}
+
+.admin-brand {
+    padding: 1.25rem 1.25rem 1rem;
+    border-bottom: 1px solid #1e1e1e;
+    color: #fff;
+}
+
+.admin-nav {
+    flex: 1;
+    padding: 1rem .75rem;
+    overflow-y: auto;
+}
+
+.admin-nav-label {
+    font-size: .62rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #555;
+    margin-bottom: .35rem;
+    padding-left: .5rem;
+}
+
+.admin-nav-link {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .5rem .75rem;
+    border-radius: 6px;
+    color: #aaa;
+    text-decoration: none;
+    font-size: .85rem;
+    transition: background .15s, color .15s;
+    cursor: pointer;
+}
+
+.admin-nav-link:hover {
+    background: #1e1e1e;
+    color: #fff;
+}
+
+.admin-nav-link.active {
+    background: #1e1e1e;
+    color: #fff;
+    border-left: 2px solid var(--naranja);
+}
+
+.admin-sidebar-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid #1e1e1e;
+    font-size: .82rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+}
+
+/* ── Content ─────────────────────────────────────────────────────────────── */
+.admin-content {
+    margin-left: 220px;
+    flex: 1;
     background: #f8f8f8;
-    z-index: 9999;
+    min-height: 100vh;
+}
+
+.admin-main {
+    padding: 2rem;
+}
+
+/* ── Topbar (solo móvil) ─────────────────────────────────────────────────── */
+.admin-topbar {
+    display: none;
+    align-items: center;
+    gap: 1rem;
+    padding: .75rem 1rem;
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.admin-menu-btn {
+    background: none;
+    border: none;
+    padding: 4px 8px;
+    cursor: pointer;
+    color: #333;
+    border-radius: 6px;
+    line-height: 1;
+}
+
+.admin-menu-btn:hover {
+    background: #f0f0f0;
+}
+
+/* ── Overlay (solo móvil) ────────────────────────────────────────────────── */
+.admin-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 199;
+}
+
+/* ── Página ──────────────────────────────────────────────────────────────── */
+.admin-page-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+
+.admin-page-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .05rem;
+    margin: 0;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .admin-sidebar {
+        transform: translateX(-100%);
+    }
+
+    .admin-layout.sidebar-open .admin-sidebar {
+        transform: translateX(0);
+    }
+
+    .admin-layout.sidebar-open .admin-overlay {
+        display: block;
+    }
+
+    .admin-content {
+        margin-left: 0;
+    }
+
+    .admin-topbar {
+        display: flex;
+    }
+
+    .admin-main {
+        padding: 1.25rem 1rem;
+    }
+}
+
+/* Stat cards del dashboard */
+.stat-card {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 1.25rem;
+}
+
+.stat-card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    margin-bottom: .75rem;
+}
+
+.stat-card-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: .2rem;
+}
+
+.stat-card-label {
+    font-size: .75rem;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }

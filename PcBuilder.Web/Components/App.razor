@@ -16,9 +16,10 @@
 </head>
 
 <body data-enhance-nav="true">
-<Routes @rendermode="@(new InteractiveServerRenderMode(prerender: true))" />
+<Routes @rendermode="@(new InteractiveServerRenderMode(prerender: false))" />
 <ReconnectModal/>
 <script src="@Assets["_framework/blazor.web.js"]"></script>
+<script src="lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

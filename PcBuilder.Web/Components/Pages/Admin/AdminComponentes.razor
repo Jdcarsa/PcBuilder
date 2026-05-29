@@ -1,0 +1,332 @@
+@* Pages/Admin/AdminComponentes.razor *@
+@page "/admin/componentes"
+@layout AdminLayout
+@using PcBuilder.Application.DTOs
+@using PcBuilder.Domain.Enums
+@using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Components.Layout
+@using PcBuilder.Web.Components.Molecules
+@using PcBuilder.Web.Components.Pages.Admin.Modales
+@using PcBuilder.Web.Services
+@inject ApiClient Api
+
+<PageTitle>Componentes — Admin PcBuilder</PageTitle>
+
+<div class="admin-page-header">
+    <h4 class="admin-page-title">Componentes</h4>
+    <AppButton Variante="naranja" Tamaño="sm" OnClick="() => AbrirModal()">
+        <i class="bi bi-plus-lg me-1"></i>
+        <span class="d-none d-sm-inline">Nuevo componente</span>
+        <span class="d-sm-none">Nuevo</span>
+    </AppButton>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-dark py-3 px-3">
+        <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 flex-wrap">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-secondary border-secondary text-white">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input class="form-control form-control-sm bg-secondary border-secondary text-white"
+                       placeholder="Buscar nombre o SKU..."
+                       @bind="_termino" @bind:event="oninput" />
+            </div>
+
+            <div class="d-flex gap-2">
+                <select class="form-select form-select-sm bg-secondary border-secondary text-white flex-grow-1"
+                        @bind="_categoriaFiltro">
+                    <option value="">Todas las categorías</option>
+                    @foreach (var cat in Enum.GetValues<CategoriaComponente>())
+                    {
+                        <option value="@cat">@cat</option>
+                    }
+                </select>
+
+                <select class="form-select form-select-sm bg-secondary border-secondary text-white"
+                        style="max-width:130px"
+                        @bind="_soloActivos">
+                    <option value="true">Solo activos</option>
+                    <option value="false">Todos</option>
+                </select>
+            </div>
+
+            <span class="text-muted small" style="color:#aaa!important">
+                @ComponentesFiltrados.Count() resultados
+            </span>
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        @if (_cargando)
+        {
+            <Spinner />
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 small">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-3">Componente</th>
+                            <th class="d-none d-md-table-cell">Categoría</th>
+                            <th style="white-space:nowrap">Precio</th>
+                            <th class="d-none d-sm-table-cell">Stock</th>
+                            <th class="d-none d-sm-table-cell">Estado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in ComponentesFiltrados)
+                        {
+                            <tr>
+                                <td class="ps-3">
+                                    <p class="mb-0 fw-semibold">@c.Nombre</p>
+                                    <small class="text-muted">@c.Marca · @c.Sku</small>
+                                    <div class="d-flex gap-1 mt-1 d-md-none">
+                                        <span class="badge bg-naranja-light text-naranja">@c.Categoria</span>
+                                        @if (c.EstaActivo)
+                                        {
+                                            <span class="badge bg-success bg-opacity-25 text-success">Activo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary bg-opacity-25 text-secondary">Inactivo</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td class="d-none d-md-table-cell">
+                                    <span class="badge bg-naranja-light text-naranja">@c.Categoria</span>
+                                </td>
+                                <td class="fw-semibold text-naranja" style="white-space:nowrap">
+                                    @c.Precio.ToString("C0", _cultura)
+                                </td>
+                                <td class="d-none d-sm-table-cell">
+                                    <span class="@(c.Stock <= 5 ? "text-danger fw-bold" : "text-dark")">
+                                        @c.Stock
+                                        @if (c.Stock <= 5)
+                                        {
+                                            <i class="bi bi-exclamation-circle ms-1 small"></i>
+                                        }
+                                    </span>
+                                </td>
+                                <td class="d-none d-sm-table-cell">
+                                    @if (c.EstaActivo)
+                                    {
+                                        <span class="badge bg-success bg-opacity-25 text-success">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary bg-opacity-25 text-secondary">Inactivo</span>
+                                    }
+                                </td>
+                                <td>
+                                    @* Desktop: botones visibles *@
+                                    <div class="d-none d-sm-flex gap-1 justify-content-end pe-2">
+                                        <button class="btn btn-outline-secondary btn-sm py-0 px-2"
+                                                title="Editar precio"
+                                                @onclick="() => AbrirModalPrecio(c)">
+                                            <i class="bi bi-tag"></i>
+                                        </button>
+                                        <button class="btn btn-outline-secondary btn-sm py-0 px-2"
+                                                title="Ajustar stock"
+                                                @onclick="() => AbrirModalStock(c)">
+                                            <i class="bi bi-boxes"></i>
+                                        </button>
+                                        <button class="btn btn-sm py-0 px-2 @(c.EstaActivo ? "btn-outline-danger" : "btn-outline-success")"
+                                                title="@(c.EstaActivo ? "Desactivar" : "Activar")"
+                                                @onclick="() => ToggleActivo(c)">
+                                            <i class="bi @(c.EstaActivo ? "bi-eye-slash" : "bi-eye")"></i>
+                                        </button>
+                                    </div>
+
+                                    @* Móvil: menú tres puntos *@
+                                    <div class="d-sm-none dropdown text-end pe-2">
+                                        <button class="btn btn-outline-secondary btn-sm py-0 px-2"
+                                                data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                            <li>
+                                                <button class="dropdown-item small"
+                                                        @onclick="() => AbrirModalPrecio(c)">
+                                                    <i class="bi bi-tag me-2"></i>Editar precio
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item small"
+                                                        @onclick="() => AbrirModalStock(c)">
+                                                    <i class="bi bi-boxes me-2"></i>Ajustar stock
+                                                </button>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <button class="dropdown-item small @(c.EstaActivo ? "text-danger" : "text-success")"
+                                                        @onclick="() => ToggleActivo(c)">
+                                                    <i class="bi @(c.EstaActivo ? "bi-eye-slash" : "bi-eye") me-2"></i>
+                                                    @(c.EstaActivo ? "Desactivar" : "Activar")
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@if (_modalNuevo)
+{
+    <ModalNuevoComponente Form="@_nuevo"
+                          FormChanged="f => _nuevo = f"
+                          Error="@_error"
+                          Guardando="@_guardando"
+                          OnGuardar="CrearComponente"
+                          OnCerrar="CerrarModales" />
+}
+
+@if (_modalPrecio && _seleccionado is not null)
+{
+    <ModalPrecio Componente="@_seleccionado"
+                 Precio="@_nuevoPrecio"
+                 PrecioChanged="v => _nuevoPrecio = v"
+                 Error="@_error"
+                 Guardando="@_guardando"
+                 OnGuardar="GuardarPrecio"
+                 OnCerrar="CerrarModales" />
+}
+
+@if (_modalStock && _seleccionado is not null)
+{
+    <ModalStock Componente="@_seleccionado"
+                Ajuste="@_ajusteStock"
+                AjusteChanged="v => _ajusteStock = v"
+                Error="@_error"
+                Guardando="@_guardando"
+                OnGuardar="GuardarStock"
+                OnCerrar="CerrarModales" />
+}
+
+@code {
+    private List<ComponenteResponse> _componentes = [];
+    private bool _cargando = true;
+    private bool _guardando;
+    private string _termino = string.Empty;
+    private string _categoriaFiltro = string.Empty;
+    private string _soloActivos = "true";
+    private string _error = string.Empty;
+
+    private bool _modalNuevo;
+    private bool _modalPrecio;
+    private bool _modalStock;
+    private ComponenteResponse? _seleccionado;
+    private decimal _nuevoPrecio;
+    private int _ajusteStock;
+
+    private ModalNuevoComponente.NuevoComponenteForm _nuevo = new();
+    private static readonly System.Globalization.CultureInfo _cultura = new("es-CO");
+
+    private IEnumerable<ComponenteResponse> ComponentesFiltrados => _componentes
+        .Where(c => (_soloActivos != "true" || c.EstaActivo) &&
+                    (string.IsNullOrWhiteSpace(_categoriaFiltro) || c.Categoria == _categoriaFiltro) &&
+                    (string.IsNullOrWhiteSpace(_termino) ||
+                     c.Nombre.Contains(_termino, StringComparison.OrdinalIgnoreCase) ||
+                     c.Sku.Contains(_termino, StringComparison.OrdinalIgnoreCase)));
+
+    protected override async Task OnInitializedAsync() => await Cargar();
+
+    private async Task Cargar()
+    {
+        _cargando = true;
+        try { _componentes = await Api.GetAsync<List<ComponenteResponse>>("/api/componentes") ?? []; }
+        catch { }
+        finally { _cargando = false; }
+    }
+
+    private void AbrirModal()
+    {
+        _nuevo = new();
+        _error = string.Empty;
+        _modalNuevo = true;
+    }
+
+    private void AbrirModalPrecio(ComponenteResponse c)
+    {
+        _seleccionado = c;
+        _nuevoPrecio = c.Precio;
+        _error = string.Empty;
+        _modalPrecio = true;
+    }
+
+    private void AbrirModalStock(ComponenteResponse c)
+    {
+        _seleccionado = c;
+        _ajusteStock = 0;
+        _error = string.Empty;
+        _modalStock = true;
+    }
+
+    private void CerrarModales()
+    {
+        _modalNuevo = _modalPrecio = _modalStock = false;
+        _seleccionado = null;
+        _error = string.Empty;
+    }
+
+    private async Task CrearComponente()
+    {
+        _error = string.Empty;
+        _guardando = true;
+        try
+        {
+            await Api.PostAsync<ComponenteResponse>("/api/componentes",
+                new CrearComponenteRequest(_nuevo.Nombre, _nuevo.Descripcion, _nuevo.Sku,
+                    _nuevo.Marca, _nuevo.Modelo, _nuevo.Categoria, _nuevo.Precio,
+                    _nuevo.Stock, _nuevo.ConsumoWatts, _nuevo.UrlImagen));
+            CerrarModales();
+            await Cargar();
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _guardando = false; }
+    }
+
+    private async Task GuardarPrecio()
+    {
+        _error = string.Empty;
+        _guardando = true;
+        try
+        {
+            await Api.PatchAsync($"/api/componentes/{_seleccionado!.Id}/precio",
+                new ActualizarPrecioRequest(_nuevoPrecio));
+            CerrarModales();
+            await Cargar();
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _guardando = false; }
+    }
+
+    private async Task GuardarStock()
+    {
+        _error = string.Empty;
+        _guardando = true;
+        try
+        {
+            await Api.PatchAsync($"/api/componentes/{_seleccionado!.Id}/stock",
+                new AjustarStockRequest(_ajusteStock));
+            CerrarModales();
+            await Cargar();
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _guardando = false; }
+    }
+
+    private async Task ToggleActivo(ComponenteResponse c)
+    {
+        try { await Api.DeleteAsync($"/api/componentes/{c.Id}"); await Cargar(); }
+        catch { }
+    }
+}

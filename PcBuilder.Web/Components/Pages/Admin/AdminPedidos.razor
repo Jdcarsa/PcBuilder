@@ -1,0 +1,109 @@
+@* Pages/Admin/AdminPedidos.razor *@
+@page "/admin/pedidos"
+@layout AdminLayout
+@using PcBuilder.Application.DTOs
+@using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Components.Layout
+@using PcBuilder.Web.Services
+@inject ApiClient Api
+@inject NavigationManager Nav
+
+<PageTitle>Pedidos — Admin PcBuilder</PageTitle>
+
+
+
+<div class="admin-page-header">
+    <h4 class="admin-page-title">Pedidos</h4>
+    <div class="d-flex gap-2">
+        <select class="form-select form-select-sm w-auto" @bind="_estadoFiltro">
+            <option value="">Todos los estados</option>
+            <option value="Borrador">Borrador</option>
+            <option value="Confirmado">Confirmado</option>
+            <option value="EnProcesamiento">En procesamiento</option>
+            <option value="Enviado">Enviado</option>
+            <option value="Entregado">Entregado</option>
+            <option value="Cancelado">Cancelado</option>
+        </select>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        @if (_cargando)
+        {
+            <Spinner />
+        }
+        else if (!PedidosFiltrados.Any())
+        {
+            <p class="text-muted text-center py-5 small">No hay pedidos.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Número</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var pedido in PedidosFiltrados)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@pedido.NumeroPedido</td>
+                                <td class="text-muted">@pedido.CreadoEn.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    <span class="badge @BadgeEstado(pedido.Estado)">@pedido.Estado</span>
+                                </td>
+                                <td>@pedido.Items.Count</td>
+                                <td class="fw-semibold text-naranja">
+                                    @pedido.Total.ToString("C0", _cultura)
+                                </td>
+                                <td>
+                                    <a href="/admin/pedidos/@pedido.Id"
+                                       class="btn btn-outline-secondary btn-sm py-0 px-2">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<PedidoResponse> _pedidos = [];
+    private bool _cargando = true;
+    private string _estadoFiltro = string.Empty;
+
+    private static readonly System.Globalization.CultureInfo _cultura = new("es-CO");
+
+    private IEnumerable<PedidoResponse> PedidosFiltrados => _pedidos
+        .Where(p => string.IsNullOrWhiteSpace(_estadoFiltro) || p.Estado == _estadoFiltro)
+        .OrderByDescending(p => p.CreadoEn);
+
+    protected override async Task OnInitializedAsync()
+    {
+        try { _pedidos = await Api.GetAsync<List<PedidoResponse>>("/api/pedidos/todos") ?? []; }
+        catch { }
+        finally { _cargando = false; }
+    }
+
+    private static string BadgeEstado(string estado) => estado switch
+    {
+        "Confirmado"      => "bg-primary",
+        "EnProcesamiento" => "bg-warning text-dark",
+        "Enviado"         => "bg-info text-dark",
+        "Entregado"       => "bg-success",
+        "Cancelado"       => "bg-danger",
+        _                 => "bg-secondary"
+    };
+}

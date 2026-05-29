@@ -1,16 +1,27 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @using PcBuilder.Web.Components.Organisms
+@using PcBuilder.Web.Services
+@inject SesionService Sesion
 
-<NavBar />
+<SesionInitializer OnInicializado="@(() => { _listo = true; StateHasChanged(); })" />
+
+@if (_listo)
+{
+    <NavBar />
+}
+else
+{
+    <div style="height: 57px;" class="border-bottom bg-white shadow-sm sticky-top"></div>
+}
 
 <main class="main-content">
     @Body
 </main>
 
-<footer class="footer bg-white border-top py-4">
+<footer class="footer bg-white border-top mt-5 py-4">
     <div class="container-xl text-center">
         <p class="small text-muted mb-0">
-            © @(DateTime.Today.Year) <strong>PC<span class="text-naranja">Builder</span></strong>
+            © 2025 <strong>PC<span class="text-naranja">Builder</span></strong>
             — Arma tu PC Gamer
         </p>
     </div>
@@ -21,3 +32,7 @@
     <a href="." class="reload">Recargar</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private bool _listo;
+}

@@ -1,8 +1,10 @@
+using System.Net;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components;
 
 namespace PcBuilder.Web.Services;
 
-public class ApiClient(HttpClient http, SesionService sesion)
+public class ApiClient(HttpClient http, SesionService sesion, NavigationManager nav)
 {
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -16,10 +18,21 @@ public class ApiClient(HttpClient http, SesionService sesion)
             : null;
     }
 
+    private void Manejar401(HttpResponseMessage response)
+    {
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            sesion.CerrarSesion();
+            nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(nav.Uri)}", forceLoad: false);
+            response.EnsureSuccessStatusCode();
+        }
+    }
+
     public async Task<T?> GetAsync<T>(string url, CancellationToken ct = default)
     {
         AgregarToken();
         var response = await http.GetAsync(url, ct);
+        Manejar401(response);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<T>(JsonOpts, ct);
     }
@@ -28,29 +41,33 @@ public class ApiClient(HttpClient http, SesionService sesion)
     {
         AgregarToken();
         var response = await http.PostAsJsonAsync(url, body, ct);
+        Manejar401(response);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<T>(JsonOpts, ct);
     }
-    
-    public async Task PostAsync(string url, object body, CancellationToken ct = default)
-    {
-        AgregarToken();
-        var response = await http.PostAsJsonAsync(url, body, ct);
-        response.EnsureSuccessStatusCode();
-    }
-    
+
     public async Task<T?> PostAsync<T>(string url, CancellationToken ct = default)
     {
         AgregarToken();
         var response = await http.PostAsync(url, null, ct);
+        Manejar401(response);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<T>(JsonOpts, ct);
+    }
+
+    public async Task PostAsync(string url, object body, CancellationToken ct = default)
+    {
+        AgregarToken();
+        var response = await http.PostAsJsonAsync(url, body, ct);
+        Manejar401(response);
+        response.EnsureSuccessStatusCode();
     }
 
     public async Task<T?> PutAsync<T>(string url, object body, CancellationToken ct = default)
     {
         AgregarToken();
         var response = await http.PutAsJsonAsync(url, body, ct);
+        Manejar401(response);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<T>(JsonOpts, ct);
     }
@@ -59,6 +76,7 @@ public class ApiClient(HttpClient http, SesionService sesion)
     {
         AgregarToken();
         var response = await http.PatchAsJsonAsync(url, body, ct);
+        Manejar401(response);
         response.EnsureSuccessStatusCode();
     }
 
@@ -66,6 +84,7 @@ public class ApiClient(HttpClient http, SesionService sesion)
     {
         AgregarToken();
         var response = await http.DeleteAsync(url, ct);
+        Manejar401(response);
         response.EnsureSuccessStatusCode();
     }
 }

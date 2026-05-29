@@ -1,0 +1,115 @@
+@* Layout/AdminLayout.razor *@
+@inherits LayoutComponentBase
+@using PcBuilder.Web.Services
+@inject SesionService Sesion
+@inject NavigationManager Nav
+
+<SesionInitializer OnInicializado="OnSesionLista" />
+
+@if (!_listo)
+{
+    <div class="d-flex align-items-center justify-content-center" style="min-height:100vh">
+        <div class="spinner-border text-naranja" role="status"></div>
+    </div>
+}
+else if (!Sesion.EstaAutenticado)
+{
+    <div class="d-flex align-items-center justify-content-center" style="min-height:100vh">
+        <div class="text-center text-muted">
+            <i class="bi bi-lock display-4 d-block mb-3"></i>
+            <p>Debes iniciar sesión.</p>
+            <a href="/login?returnUrl=/admin" class="btn btn-naranja btn-sm">Ingresar</a>
+        </div>
+    </div>
+}
+else if (!Sesion.EsAdministrador)
+{
+    <div class="d-flex align-items-center justify-content-center" style="min-height:100vh">
+        <div class="text-center text-muted">
+            <i class="bi bi-shield-lock display-4 d-block mb-3"></i>
+            <p>No tienes acceso a esta sección.</p>
+            <a href="/" class="btn btn-naranja btn-sm">Volver al inicio</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="admin-layout @(_sidebarAbierto ? "sidebar-open" : "")">
+
+        <div class="admin-overlay" @onclick="ToggleSidebar"></div>
+
+        <aside class="admin-sidebar">
+            <div class="admin-brand">
+                <span class="fw-black text-uppercase">PC<span class="text-naranja">Builder</span></span>
+                <small class="d-block text-muted" style="font-size:.65rem;letter-spacing:1px">ADMIN</small>
+            </div>
+
+            <nav class="admin-nav">
+                <p class="admin-nav-label">General</p>
+                <NavLink class="admin-nav-link" href="/admin" Match="NavLinkMatch.All" @onclick="CerrarSidebarMovil">
+                    <i class="bi bi-grid-1x2"></i> Dashboard
+                </NavLink>
+
+                <p class="admin-nav-label mt-3">Catálogo</p>
+                <NavLink class="admin-nav-link" href="/admin/componentes" @onclick="CerrarSidebarMovil">
+                    <i class="bi bi-cpu"></i> Componentes
+                </NavLink>
+
+                <p class="admin-nav-label mt-3">Ventas</p>
+                <NavLink class="admin-nav-link" href="/admin/pedidos" @onclick="CerrarSidebarMovil">
+                    <i class="bi bi-box-seam"></i> Pedidos
+                </NavLink>
+
+                <p class="admin-nav-label mt-3">Cuenta</p>
+                <a class="admin-nav-link" href="/" @onclick="CerrarSidebarMovil">
+                    <i class="bi bi-arrow-left"></i> Ver tienda
+                </a>
+                <button class="admin-nav-link border-0 bg-transparent w-100 text-start text-danger"
+                        @onclick="async () => await CerrarSesion()">
+                    <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                </button>
+            </nav>
+
+            <div class="admin-sidebar-footer">
+                <i class="bi bi-person-circle me-2"></i>
+                <span class="small">@Sesion.NombreCompleto</span>
+            </div>
+        </aside>
+
+        <div class="admin-content">
+            <div class="admin-topbar">
+                <button class="admin-menu-btn" @onclick="ToggleSidebar">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+                <span class="fw-bold text-uppercase" style="font-size:.9rem">
+                    PC<span class="text-naranja">Builder</span>
+                    <small class="text-muted ms-1" style="font-size:.6rem;letter-spacing:1px">ADMIN</small>
+                </span>
+            </div>
+
+            <main class="admin-main">
+                @Body
+            </main>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _listo;
+    private bool _sidebarAbierto;
+
+    private void OnSesionLista()
+    {
+        _listo = true;
+        StateHasChanged();
+    }
+
+    private void ToggleSidebar() => _sidebarAbierto = !_sidebarAbierto;
+    private void CerrarSidebarMovil() => _sidebarAbierto = false;
+
+    private async Task CerrarSesion()
+    {
+        await Sesion.CerrarSesionAsync();
+        Nav.NavigateTo("/login");
+    }
+}

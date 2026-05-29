@@ -4,25 +4,43 @@
     {
         <label class="form-label fw-semibold small">@Label</label>
     }
-    <input
-        type="@Type"
-        class="form-control @(string.IsNullOrWhiteSpace(Error) ? "" : "is-invalid")"
-        placeholder="@Placeholder"
-        value="@Valor"
-        @oninput="e => ValorChanged.InvokeAsync(e.Value?.ToString())"
-        disabled="@Disabled" />
-    @if (!string.IsNullOrWhiteSpace(Error))
-    {
-        <div class="invalid-feedback">@Error</div>
-    }
+
+    <div class="@(EsPassword ? "input-group" : "")">
+        <input
+            type="@_tipoActual"
+            class="form-control @(string.IsNullOrWhiteSpace(Error) ? "" : "is-invalid")"
+            placeholder="@Placeholder"
+            value="@Valor"
+            @oninput="e => ValorChanged.InvokeAsync(e.Value?.ToString())"
+            disabled="@Disabled" />
+
+        @if (EsPassword)
+        {
+            <button class="btn btn-outline-secondary" type="button"
+                    @onclick="ToggleMostrar" tabindex="-1">
+                <i class="bi @(_mostrar ? "bi-eye-slash" : "bi-eye")"></i>
+            </button>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Error))
+        {
+            <div class="invalid-feedback">@Error</div>
+        }
+    </div>
 </div>
 
 @code {
-    [Parameter] public string Label { get; set; } = string.Empty;
+    [Parameter] public string Label     { get; set; } = string.Empty;
     [Parameter] public string Placeholder { get; set; } = string.Empty;
-    [Parameter] public string Type { get; set; } = "text";
-    [Parameter] public string Valor { get; set; } = string.Empty;
+    [Parameter] public string Type      { get; set; } = "text";
+    [Parameter] public string Valor     { get; set; } = string.Empty;
     [Parameter] public EventCallback<string> ValorChanged { get; set; }
-    [Parameter] public string Error { get; set; } = string.Empty;
-    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string Error     { get; set; } = string.Empty;
+    [Parameter] public bool Disabled    { get; set; }
+
+    private bool EsPassword => Type == "password";
+    private bool _mostrar;
+    private string _tipoActual => EsPassword && _mostrar ? "text" : Type;
+
+    private void ToggleMostrar() => _mostrar = !_mostrar;
 }

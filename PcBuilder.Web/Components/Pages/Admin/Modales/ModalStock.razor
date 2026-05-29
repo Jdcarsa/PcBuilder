@@ -1,0 +1,64 @@
+@* Pages/Admin/Modales/ModalStock.razor *@
+@using PcBuilder.Application.DTOs
+@using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Components.Molecules
+
+<ModalContenedor Titulo="Ajustar stock"
+                 Subtitulo="@Componente?.Nombre"
+                 Ancho="360px"
+                 OnCerrar="OnCerrar">
+    <Body>
+        <Alerta Mensaje="@Error" Tipo="danger" />
+
+        <div class="d-flex align-items-center justify-content-between bg-light rounded p-3 mb-3">
+            <div>
+                <p class="text-muted small mb-1">Stock actual</p>
+                <p class="fs-4 fw-black mb-0">@Componente?.Stock</p>
+            </div>
+            <div class="d-flex align-items-center border rounded overflow-hidden">
+                <button class="btn btn-light border-0 rounded-0 px-3 py-2 fs-5 lh-1"
+                        @onclick="Decrementar">
+                    <i class="bi bi-dash"></i>
+                </button>
+                <span class="px-3 py-2 fw-bold border-start border-end text-center"
+                      style="min-width:48px">
+                    @(Ajuste > 0 ? $"+{Ajuste}" : Ajuste.ToString())
+                </span>
+                <button class="btn btn-light border-0 rounded-0 px-3 py-2 fs-5 lh-1"
+                        @onclick="Incrementar">
+                    <i class="bi bi-plus"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="text-center small text-muted mb-3">
+            Stock resultante:
+            <strong class="@(StockResultante < 0 ? "text-danger" : "text-dark")">
+                @Math.Max(0, StockResultante) unidades
+            </strong>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <button class="btn btn-outline-secondary btn-sm" @onclick="OnCerrar">Cancelar</button>
+            <AppButton Variante="primary" Tamaño="sm" OnClick="OnGuardar"
+                       Cargando="@Guardando" Disabled="@(Ajuste == 0)">
+                <i class="bi bi-check2 me-1"></i>Guardar
+            </AppButton>
+        </div>
+    </Body>
+</ModalContenedor>
+
+@code {
+    [Parameter] public ComponenteResponse? Componente { get; set; }
+    [Parameter] public int Ajuste                     { get; set; }
+    [Parameter] public EventCallback<int> AjusteChanged { get; set; }
+    [Parameter] public string Error                   { get; set; } = string.Empty;
+    [Parameter] public bool Guardando                 { get; set; }
+    [Parameter] public EventCallback OnGuardar        { get; set; }
+    [Parameter] public EventCallback OnCerrar         { get; set; }
+
+    private int StockResultante => (Componente?.Stock ?? 0) + Ajuste;
+
+    private void Incrementar() => AjusteChanged.InvokeAsync(Ajuste + 1);
+    private void Decrementar() => AjusteChanged.InvokeAsync(Ajuste - 1);
+}

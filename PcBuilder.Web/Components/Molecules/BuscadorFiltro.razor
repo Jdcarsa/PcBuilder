@@ -1,4 +1,3 @@
-@* Molecules/BuscadorFiltro.razor *@
 @using PcBuilder.Domain.Enums
 
 <div class="buscador-filtro d-flex gap-2 align-items-center flex-wrap">
@@ -8,20 +7,23 @@
         </span>
         <input type="text"
                class="form-control border-start-0"
-               placeholder="Buscar componente..."
+               placeholder="@Placeholder"
                value="@Termino"
                @oninput="e => OnTerminoChanged.InvokeAsync(e.Value?.ToString())" />
     </div>
 
-    <select class="form-select w-auto"
-            value="@CategoriaSeleccionada"
-            @onchange="e => OnCategoriaChanged.InvokeAsync(e.Value?.ToString())">
-        <option value="">Todas las categorías</option>
-        @foreach (var cat in Enum.GetValues<CategoriaComponente>())
-        {
-            <option value="@cat">@cat</option>
-        }
-    </select>
+    @if (MostrarCategoria)
+    {
+        <select class="form-select w-auto"
+                value="@CategoriaSeleccionada"
+                @onchange="e => OnCategoriaChanged.InvokeAsync(e.Value?.ToString())">
+            <option value="">Todas las categorías</option>
+            @foreach (var cat in Enum.GetValues<CategoriaComponente>())
+            {
+                <option value="@cat">@cat</option>
+            }
+        </select>
+    }
 </div>
 
 @code {
@@ -29,4 +31,6 @@
     [Parameter] public string CategoriaSeleccionada { get; set; } = string.Empty;
     [Parameter] public EventCallback<string> OnTerminoChanged { get; set; }
     [Parameter] public EventCallback<string> OnCategoriaChanged { get; set; }
+    [Parameter] public bool MostrarCategoria { get; set; } = true;
+    [Parameter] public string Placeholder { get; set; } = "Buscar componente...";
 }

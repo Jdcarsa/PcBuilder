@@ -18,7 +18,7 @@ public class JwtService(IConfiguration config) : IJwtService
     public string GenerarToken(Usuario usuario)
     {
         var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(config["Jwt:SecretKey"]!));
+            Encoding.UTF8.GetBytes(config["Jwt:Key"]!));
 
         var claims = new[]
         {

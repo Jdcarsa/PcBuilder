@@ -1,0 +1,17 @@
+@* Layout/SesionInitializer.razor *@
+@using PcBuilder.Web.Services
+@inject SesionService Sesion
+
+@code {
+    [Parameter] public EventCallback OnInicializado { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Sesion.InicializarAsync();
+            await OnInicializado.InvokeAsync();
+            StateHasChanged();
+        }
+    }
+}

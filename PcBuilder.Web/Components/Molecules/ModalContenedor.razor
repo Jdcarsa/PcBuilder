@@ -1,0 +1,27 @@
+@* Molecules/ModalContenedor.razor *@
+<div class="modal-backdrop-custom" @onclick="OnCerrar"></div>
+<div class="modal-custom" style="max-width:@Ancho">
+    <div class="modal-custom-header">
+        <div>
+            <span class="fw-bold small text-uppercase">@Titulo</span>
+            @if (!string.IsNullOrWhiteSpace(Subtitulo))
+            {
+                <p class="text-muted small mb-0">@Subtitulo</p>
+            }
+        </div>
+        <button class="btn btn-link text-muted p-0" @onclick="OnCerrar">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+    <div class="modal-custom-body">
+        @Body
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Titulo    { get; set; } = string.Empty;
+    [Parameter] public string Subtitulo { get; set; } = string.Empty;
+    [Parameter] public string Ancho     { get; set; } = "500px";
+    [Parameter] public RenderFragment? Body { get; set; }
+    [Parameter] public EventCallback OnCerrar { get; set; }
+}

@@ -1,7 +1,9 @@
 @* Pages/Login.razor *@
 @page "/login"
+@layout EmptyLayout
 @using PcBuilder.Application.DTOs
 @using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Components.Layout
 @using PcBuilder.Web.Services
 @inject ApiClient Api
 @inject SesionService Sesion
@@ -9,70 +11,70 @@
 
 <PageTitle>Ingresar — PcBuilder</PageTitle>
 
-<div class="container py-5" style="max-width:440px">
-    <div class="text-center mb-4">
-        <a href="/" class="text-decoration-none">
-            <h4 class="fw-black text-uppercase">PC<span class="text-naranja">Builder</span></h4>
-        </a>
-        <p class="text-muted small">@(_modoRegistro ? "Crea tu cuenta" : "Ingresa a tu cuenta")</p>
-    </div>
-
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-4">
-            <Alerta Mensaje="@_error" Tipo="danger" />
-            <Alerta Mensaje="@_exito" Tipo="success" />
-
-            @if (!_modoRegistro)
-            {
-                <AppInput Label="Email" Type="email" Placeholder="tu@email.com"
-                          Valor="@_email" ValorChanged="v => _email = v" />
-                <AppInput Label="Contraseña" Type="password" Placeholder="••••••••"
-                          Valor="@_password" ValorChanged="v => _password = v" />
-
-                <AppButton Variante="naranja" Clase="w-100 mt-2"
-                           OnClick="HandleLogin" Cargando="@_cargando">
-                    Ingresar
-                </AppButton>
-
-                <p class="text-center small text-muted mt-3 mb-0">
-                    ¿No tienes cuenta?
-                    <button class="btn btn-link btn-sm p-0 text-naranja"
-                            @onclick="() => { _modoRegistro = true; _error = _exito = string.Empty; }">
-                        Regístrate
-                    </button>
-                </p>
-            }
-            else
-            {
-                <div class="row g-2">
-                    <div class="col-6">
-                        <AppInput Label="Nombre" Placeholder="Juan"
-                                  Valor="@_nombre" ValorChanged="v => _nombre = v" />
-                    </div>
-                    <div class="col-6">
-                        <AppInput Label="Apellido" Placeholder="Pérez"
-                                  Valor="@_apellido" ValorChanged="v => _apellido = v" />
-                    </div>
-                </div>
-                <AppInput Label="Email" Type="email" Placeholder="tu@email.com"
-                          Valor="@_email" ValorChanged="v => _email = v" />
-                <AppInput Label="Contraseña" Type="password" Placeholder="Mínimo 8 caracteres"
-                          Valor="@_password" ValorChanged="v => _password = v" />
-
-                <AppButton Variante="naranja" Clase="w-100 mt-2"
-                           OnClick="HandleRegistro" Cargando="@_cargando">
-                    Crear cuenta
-                </AppButton>
-
-                <p class="text-center small text-muted mt-3 mb-0">
-                    ¿Ya tienes cuenta?
-                    <button class="btn btn-link btn-sm p-0 text-naranja"
-                            @onclick="() => { _modoRegistro = false; _error = _exito = string.Empty; }">
-                        Ingresar
-                    </button>
-                </p>
-            }
+<div class="login-page">
+    <div class="login-card">
+        <div class="text-center mb-4">
+            <a href="/" class="text-decoration-none">
+                <h4 class="fw-black text-uppercase">PC<span class="text-naranja">Builder</span></h4>
+            </a>
+            <p class="text-muted small mt-1 mb-0">
+                @(_modoRegistro ? "Crea tu cuenta" : "Ingresa a tu cuenta")
+            </p>
         </div>
+
+        <Alerta Mensaje="@_error" Tipo="danger" />
+        <Alerta Mensaje="@_exito" Tipo="success" />
+
+        @if (!_modoRegistro)
+        {
+            <AppInput Label="Email" Type="email" Placeholder="tu@email.com"
+                      Valor="@_email" ValorChanged="v => _email = v" />
+            <AppInput Label="Contraseña" Type="password" Placeholder="••••••••"
+                      Valor="@_password" ValorChanged="v => _password = v" />
+
+            <AppButton Variante="naranja" Clase="w-100 mt-1"
+                       OnClick="HandleLogin" Cargando="@_cargando">
+                Ingresar
+            </AppButton>
+
+            <p class="text-center small text-muted mt-3 mb-0">
+                ¿No tienes cuenta?
+                <button class="btn btn-link btn-sm p-0 text-naranja"
+                        @onclick="() => { _modoRegistro = true; _error = _exito = string.Empty; }">
+                    Regístrate
+                </button>
+            </p>
+        }
+        else
+        {
+            <div class="row g-2">
+                <div class="col-6">
+                    <AppInput Label="Nombre" Placeholder="Juan"
+                              Valor="@_nombre" ValorChanged="v => _nombre = v" />
+                </div>
+                <div class="col-6">
+                    <AppInput Label="Apellido" Placeholder="Pérez"
+                              Valor="@_apellido" ValorChanged="v => _apellido = v" />
+                </div>
+            </div>
+            <AppInput Label="Email" Type="email" Placeholder="example@email.com"
+                      Valor="@_email" ValorChanged="v => _email = v" />
+            <AppInput Label="Contraseña" Type="password" Placeholder="Mínimo 8 caracteres"
+                      Valor="@_password" ValorChanged="v => _password = v" />
+
+            <AppButton Variante="naranja" Clase="w-100 mt-1"
+                       OnClick="HandleRegistro" Cargando="@_cargando">
+                Crear cuenta
+            </AppButton>
+
+            <p class="text-center small text-muted mt-3 mb-0">
+                ¿Ya tienes cuenta?
+                <button class="btn btn-link btn-sm p-0 text-naranja"
+                        @onclick="() => { _modoRegistro = false; _error = _exito = string.Empty; }">
+                    Ingresar
+                </button>
+            </p>
+        }
     </div>
 </div>
 
@@ -104,10 +106,11 @@
                 "/api/auth/login",
                 new LoginRequest(_email, _password));
 
-            Sesion.IniciarSesion(resultado!);
-            Nav.NavigateTo(ReturnUrl ?? "/");
+            await Sesion.IniciarSesionAsync(resultado!);
+            var destino = !string.IsNullOrWhiteSpace(ReturnUrl) && ReturnUrl != "/" ? ReturnUrl : Sesion.EsAdministrador ? "/admin" : "/";
+            Nav.NavigateTo(destino);
         }
-        catch (Exception ex) { _error = "Credenciales inválidas."; }
+        catch { _error = "Credenciales inválidas."; }
         finally { _cargando = false; }
     }
 
