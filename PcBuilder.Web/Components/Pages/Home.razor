@@ -1,6 +1,5 @@
 ﻿@page "/"
 
-
 <PageTitle>PcBuilder — Arma tu PC Gamer</PageTitle>
 
 <section class="hero-section bg-white border-bottom">
@@ -12,7 +11,8 @@
             <strong class="fw-black">Construye</strong> el equipo<br>que mereces.
         </h1>
         <p class="hero-sub text-muted mb-4">
-            Componentes de alto rendimiento. Configura tu PC pieza<br>por pieza o explora el catálogo completo.
+            Componentes de alto rendimiento. Configura tu PC pieza<br class="d-none d-sm-inline">
+            por pieza o explora el catálogo completo.
         </p>
         <div class="d-flex gap-3 flex-wrap">
             <a href="/armar" class="btn btn-naranja text-uppercase fw-bold letter-spacing-1 px-4">
@@ -28,15 +28,16 @@
 <section class="py-4 border-bottom bg-f8">
     <div class="container-xl">
         <p class="small text-uppercase text-muted letter-spacing-2 mb-3">Categorías destacadas</p>
-        <div class="row row-cols-2 row-cols-md-4 g-1">
+        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-2">
             @foreach (var cat in _categorias)
             {
                 <div class="col">
-                    <a href="/catalogo?categoria=@cat.Valor" class="categoria-tile d-flex align-items-center gap-2 p-3 bg-white border text-decoration-none">
-                        <i class="bi @cat.Icono text-naranja fs-5"></i>
-                        <div>
-                            <div class="small fw-semibold text-dark">@cat.Nombre</div>
-                            <div class="x-small text-muted">@cat.Desde</div>
+                    <a href="/catalogo?categoria=@cat.Valor"
+                       class="categoria-tile d-flex align-items-center gap-2 p-2 p-sm-3 bg-white border rounded text-decoration-none h-100">
+                        <i class="bi @cat.Icono text-naranja fs-5 flex-shrink-0"></i>
+                        <div class="overflow-hidden">
+                            <div class="small fw-semibold text-dark text-truncate">@cat.Nombre</div>
+                            <div class="x-small text-muted text-truncate">@cat.Desde</div>
                         </div>
                     </a>
                 </div>
@@ -47,7 +48,7 @@
 
 <section class="py-5 bg-white">
     <div class="container-xl">
-        <div class="strip-armar d-flex align-items-center justify-content-between flex-wrap gap-3 p-4 border">
+        <div class="strip-armar d-flex align-items-center justify-content-between flex-wrap gap-3 p-4 border rounded">
             <div>
                 <p class="small text-uppercase text-muted letter-spacing-2 mb-1">Compatibilidad garantizada</p>
                 <h5 class="fw-bold mb-0">¿No sabes por dónde empezar?</h5>
@@ -63,14 +64,14 @@
 @code {
     private readonly List<CatInfo> _categorias =
     [
-        new("Procesadores",    "bi-cpu",          "Desde $320.000",   "Procesador"),
+        new("Procesadores",     "bi-cpu",         "Desde $320.000",   "Procesador"),
         new("Tarjetas gráficas","bi-gpu-card",    "Desde $1.200.000", "TarjetaGrafica"),
-        new("Placas madre",    "bi-motherboard",  "Desde $480.000",   "PlacaMadre"),
-        new("Memorias RAM",    "bi-memory",       "Desde $180.000",   "MemoriaRam"),
-        new("Almacenamiento",  "bi-device-hdd",   "Desde $150.000",   "Almacenamiento"),
-        new("Fuentes de poder","bi-plug",         "Desde $200.000",   "FuentePoder"),
-        new("Gabinetes",       "bi-pc-display",   "Desde $250.000",   "Gabinete"),
-        new("Refrigeración",   "bi-thermometer",  "Desde $120.000",   "Refrigeracion"),
+        new("Placas madre",     "bi-motherboard", "Desde $480.000",   "PlacaMadre"),
+        new("Memorias RAM",     "bi-memory",      "Desde $180.000",   "MemoriaRam"),
+        new("Almacenamiento",   "bi-device-hdd",  "Desde $150.000",   "Almacenamiento"),
+        new("Fuentes de poder", "bi-plug",        "Desde $200.000",   "FuentePoder"),
+        new("Gabinetes",        "bi-pc-display",  "Desde $250.000",   "Gabinete"),
+        new("Refrigeración",    "bi-thermometer", "Desde $120.000",   "Refrigeracion"),
     ];
 
     private record CatInfo(string Nombre, string Icono, string Desde, string Valor);

@@ -9,7 +9,6 @@
 @inject NavigationManager Nav
 @implements IDisposable
 
-<RedirectLogin ReturnUrl="/checkout" />>
 <PageTitle>Checkout — PcBuilder</PageTitle>
 
 <div class="container py-4" style="max-width:800px">
@@ -27,7 +26,59 @@
     {
         <div class="row g-4">
             <div class="col-lg-7">
-                <div class="card border-0 shadow-sm">
+                
+                @if (!Sesion.EstaAutenticado)
+                {
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
+                            <i class="bi bi-person me-2 text-naranja"></i>Datos personales
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <AppInput Label="Nombre"
+                                              Placeholder="Juan"
+                                              Valor="@_nombre"
+                                              ValorChanged="v => _nombre = v"
+                                              Error="@(_enviado && string.IsNullOrWhiteSpace(_nombre) ? "Requerido" : "")" />
+                                </div>
+                                <div class="col-6">
+                                    <AppInput Label="Apellido"
+                                              Placeholder="Pérez"
+                                              Valor="@_apellido"
+                                              ValorChanged="v => _apellido = v" />
+                                </div>
+                                <div class="col-12">
+                                    <AppInput Label="Email"
+                                              Type="email"
+                                              Placeholder="tu@email.com"
+                                              Valor="@_email"
+                                              ValorChanged="v => _email = v"
+                                              Error="@(_enviado && string.IsNullOrWhiteSpace(_email) ? "Requerido" : "")" />
+                                </div>
+                            </div>
+                            <div class="alert alert-info small py-2 mt-2 mb-0">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Se creará una cuenta automáticamente con estos datos.
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body d-flex align-items-center gap-3">
+                            <i class="bi bi-person-check-fill text-naranja fs-4"></i>
+                            <div>
+                                <p class="mb-0 fw-semibold">@Sesion.NombreCompleto</p>
+                                <small class="text-muted">@Sesion.Usuario?.Email</small>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                
+                <div class="card border-0 shadow-sm mb-3">
                     <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
                         <i class="bi bi-geo-alt me-2 text-naranja"></i>Dirección de envío
                     </div>
@@ -44,10 +95,42 @@
                                   ValorChanged="v => _notas = v" />
                     </div>
                 </div>
+                
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
+                        <i class="bi bi-credit-card me-2 text-naranja"></i>Pago
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning small py-2 mb-3">
+                            <i class="bi bi-shield-check me-1"></i>
+                            Entorno de prueba — usa <strong>4242 4242 4242 4242</strong>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <AppInput Label="Número de tarjeta"
+                                          Placeholder="4242 4242 4242 4242"
+                                          Valor="@_tarjeta"
+                                          ValorChanged="v => _tarjeta = v" />
+                            </div>
+                            <div class="col-6">
+                                <AppInput Label="Vencimiento"
+                                          Placeholder="MM/AA"
+                                          Valor="@_vencimiento"
+                                          ValorChanged="v => _vencimiento = v" />
+                            </div>
+                            <div class="col-6">
+                                <AppInput Label="CVV"
+                                          Placeholder="123"
+                                          Valor="@_cvv"
+                                          ValorChanged="v => _cvv = v" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="col-lg-5">
-                <div class="card border-0 shadow-sm">
+                <div class="card border-0 shadow-sm sticky-top" style="top:80px">
                     <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
                         <i class="bi bi-receipt me-2 text-naranja"></i>Resumen
                     </div>
@@ -83,51 +166,88 @@
 </div>
 
 @code {
-    private string _direccion = string.Empty;
-    private string _notas = string.Empty;
+    private string _nombre     = string.Empty;
+    private string _apellido   = string.Empty;
+    private string _email      = string.Empty;
+    private string _direccion  = string.Empty;
+    private string _notas      = string.Empty;
+    private string _tarjeta    = "4242 4242 4242 4242";
+    private string _vencimiento = "12/26";
+    private string _cvv        = "123";
     private bool _procesando;
     private bool _enviado;
     private string _error = string.Empty;
 
     private static readonly System.Globalization.CultureInfo _cultura = new("es-CO");
 
-    protected override void OnInitialized()
-    {
+    protected override void OnInitialized() =>
         Carrito.OnChange += StateHasChanged;
-    }
 
     private async Task ConfirmarPedido()
     {
         _enviado = true;
         _error = string.Empty;
-
-        if (string.IsNullOrWhiteSpace(_direccion))
-            return;
+        if (string.IsNullOrWhiteSpace(_direccion)) return;
+        if (!Sesion.EstaAutenticado && string.IsNullOrWhiteSpace(_nombre)) return;
+        if (!Sesion.EstaAutenticado && string.IsNullOrWhiteSpace(_email)) return;
 
         _procesando = true;
         try
         {
+            if (!Sesion.EstaAutenticado)
+                await CrearCuentaYLogin();
+            
             var pedido = await Api.PostAsync<PedidoResponse>(
                 "/api/pedidos",
-                new CrearPedidoRequest(_direccion, string.IsNullOrWhiteSpace(_notas) ? null : _notas, null));
-
+                new CrearPedidoRequest(
+                    _direccion,
+                    string.IsNullOrWhiteSpace(_notas) ? null : _notas,
+                    null));
+            
             foreach (var item in Carrito.Items)
             {
                 await Api.PostAsync<PedidoResponse>(
                     $"/api/pedidos/{pedido!.Id}/items",
                     new AgregarItemPedidoRequest(item.ComponenteId, item.Cantidad));
             }
-
             await Api.PostAsync<PedidoResponse>($"/api/pedidos/{pedido!.Id}/confirmar");
 
             Carrito.Limpiar();
-            Nav.NavigateTo($"/cuenta/pedidos/{pedido!.Id}");
+            Nav.NavigateTo($"/pedido-confirmado/{pedido!.Id}");
         }
         catch (Exception ex)
         {
-            _error = ex.Message;
+            _error = "Error al procesar el pedido. Verifica los datos e intenta de nuevo.";
+            Console.WriteLine(ex.Message);
         }
         finally { _procesando = false; }
+    }
+
+    private async Task CrearCuentaYLogin()
+    {
+        try
+        {
+            var login = await Api.PostAsync<LoginResponse>(
+                "/api/auth/login",
+                new LoginRequest(_email, "PcBuilder123!"));
+            await Sesion.IniciarSesionAsync(login!);
+            return;
+        }
+        catch { }
+        
+        await Api.PostAsync<UsuarioResponse>(
+            "/api/auth/registro",
+            new RegistrarUsuarioRequest(
+                _nombre,
+                string.IsNullOrWhiteSpace(_apellido) ? "-" : _apellido,
+                _email,
+                "PcBuilder2025!"));
+
+        var resultado = await Api.PostAsync<LoginResponse>(
+            "/api/auth/login",
+            new LoginRequest(_email, "PcBuilder123!"));
+
+        await Sesion.IniciarSesionAsync(resultado!);
     }
 
     public void Dispose() => Carrito.OnChange -= StateHasChanged;

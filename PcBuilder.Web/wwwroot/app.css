@@ -99,6 +99,20 @@ body { background: var(--bg); font-family: 'Segoe UI', sans-serif; }
     padding: 1.25rem 1.5rem 0;
 }
 
+.stat-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 99px;
+    background: #f5f5f5;
+    font-size: .82rem;
+    border: 1px solid #e5e5e5;
+}
+
+.stat-chip-ok { background: #f0faf0; border-color: #c3e6c3; color: #2d7a2d; }
+.stat-chip-danger { background: #fff0f0; border-color: #f5c0c0; color: #c0392b; }
+
+
 .modal-custom-body {
     padding: 1.25rem 1.5rem 1.5rem;
 }

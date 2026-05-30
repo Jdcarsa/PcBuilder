@@ -10,29 +10,29 @@
         <div class="row g-2">
             <div class="col-12 col-sm-8">
                 <AppInput Label="Nombre" Valor="@Form.Nombre"
-                          ValorChanged="v => Form = Form with { Nombre = v }" />
+                          ValorChanged="v => Actualizar(Form with { Nombre = v })" />
             </div>
             <div class="col-12 col-sm-4">
                 <AppInput Label="SKU" Valor="@Form.Sku"
-                          ValorChanged="v => Form = Form with { Sku = v }" />
+                          ValorChanged="v => Actualizar(Form with { Sku = v })" />
             </div>
             <div class="col-12 col-sm-6">
                 <AppInput Label="Marca" Valor="@Form.Marca"
-                          ValorChanged="v => Form = Form with { Marca = v }" />
+                          ValorChanged="v => Actualizar(Form with { Marca = v })" />
             </div>
             <div class="col-12 col-sm-6">
                 <AppInput Label="Modelo" Valor="@Form.Modelo"
-                          ValorChanged="v => Form = Form with { Modelo = v }" />
+                          ValorChanged="v => Actualizar(Form with { Modelo = v })" />
             </div>
             <div class="col-12">
                 <label class="form-label fw-semibold small">Descripción</label>
                 <textarea class="form-control form-control-sm" rows="2"
-                          @oninput="e => Form = Form with { Descripcion = e.Value?.ToString() ?? string.Empty }">@Form.Descripcion</textarea>
+                          @oninput="e => Actualizar(Form with { Descripcion = e.Value?.ToString() ?? string.Empty })">@Form.Descripcion</textarea>
             </div>
             <div class="col-12 col-sm-6">
                 <label class="form-label fw-semibold small">Categoría</label>
                 <select class="form-select form-select-sm"
-                        @onchange="e => Form = Form with { Categoria = Enum.Parse<CategoriaComponente>(e.Value!.ToString()!) }">
+                        @onchange="e => Actualizar(Form with { Categoria = Enum.Parse<CategoriaComponente>(e.Value!.ToString()!) })">
                     @foreach (var cat in Enum.GetValues<CategoriaComponente>())
                     {
                         <option value="@cat">@cat</option>
@@ -41,19 +41,19 @@
             </div>
             <div class="col-6 col-sm-3">
                 <AppInput Label="Precio" Type="number" Valor="@Form.Precio.ToString()"
-                          ValorChanged="v => Form = Form with { Precio = decimal.TryParse(v, out var p) ? p : 0 }" />
+                          ValorChanged="v => Actualizar(Form with { Precio = decimal.TryParse(v, out var p) ? p : 0 })" />
             </div>
             <div class="col-6 col-sm-3">
                 <AppInput Label="Stock" Type="number" Valor="@Form.Stock.ToString()"
-                          ValorChanged="v => Form = Form with { Stock = int.TryParse(v, out var s) ? s : 0 }" />
+                          ValorChanged="v => Actualizar(Form with { Stock = int.TryParse(v, out var s) ? s : 0 })" />
             </div>
             <div class="col-12 col-sm-6">
                 <AppInput Label="Consumo (W)" Type="number" Valor="@Form.ConsumoWatts.ToString()"
-                          ValorChanged="v => Form = Form with { ConsumoWatts = int.TryParse(v, out var w) ? w : 0 }" />
+                          ValorChanged="v => Actualizar(Form with { ConsumoWatts = int.TryParse(v, out var w) ? w : 0 })" />
             </div>
             <div class="col-12 col-sm-6">
                 <AppInput Label="URL Imagen (opcional)" Valor="@(Form.UrlImagen ?? "")"
-                          ValorChanged="v => Form = Form with { UrlImagen = string.IsNullOrWhiteSpace(v) ? null : v }" />
+                          ValorChanged="v => Actualizar(Form with { UrlImagen = string.IsNullOrWhiteSpace(v) ? null : v })" />
             </div>
         </div>
         <div class="d-flex justify-content-end gap-2 mt-3">
@@ -72,6 +72,12 @@
     [Parameter] public bool Guardando                { get; set; }
     [Parameter] public EventCallback OnGuardar       { get; set; }
     [Parameter] public EventCallback OnCerrar        { get; set; }
+
+    private void Actualizar(NuevoComponenteForm nuevoForm)
+    {
+        Form = nuevoForm;
+        FormChanged.InvokeAsync(nuevoForm);
+    }
 
     public record NuevoComponenteForm
     {

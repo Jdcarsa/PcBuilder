@@ -24,117 +24,81 @@
     }
     else
     {
-    <div class="row g-5 align-items-start">
+        <div class="row g-4 align-items-start">
 
-        <!-- imagen -->
-        <div class="col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
-
-                @if (!string.IsNullOrWhiteSpace(_componente.UrlImagen))
-                {
-                    <img src="@_componente.UrlImagen"
-                         alt="@_componente.Nombre"
-                         class="img-fluid mx-auto d-block"
-                         style="max-height:420px;object-fit:contain;" />
-                }
-                else
-                {
-                    <div class="d-flex align-items-center justify-content-center rounded-4 bg-light"
-                         style="height:420px;font-size:6rem;color:#d0d0d0;">
-                        <i class="bi bi-cpu"></i>
-                    </div>
-                }
-            </div>
-        </div>
-
-        <!-- detalle -->
-        <div class="col-lg-7">
-
-            <span class="badge rounded-pill px-3 py-2 bg-warning-subtle text-warning-emphasis fw-semibold mb-3">
-                @_componente.Categoria
-            </span>
-
-            <h1 class="fw-bold mb-2 display-6">
-                @_componente.Nombre
-            </h1>
-
-            <p class="text-secondary mb-4">
-                @_componente.Marca · @_componente.Modelo · SKU: @_componente.Sku
-            </p>
-
-            <p class="fs-5 text-dark mb-4 lh-lg">
-                @_componente.Descripcion
-            </p>
-
-            <!-- stats -->
-            <div class="row g-3 mb-4">
-
-                <div class="col-6">
-                    <div class="card border-0 shadow-sm rounded-4 p-3 text-center h-100">
-                        <div class="small text-muted text-uppercase mb-1">
-                            Consumo
-                        </div>
-
-                        <div class="fs-4 fw-bold">
-                            @_componente.ConsumoWatts W
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-6">
-                    <div class="card border-0 shadow-sm rounded-4 p-3 text-center h-100">
-                        <div class="small text-muted text-uppercase mb-1">
-                            Stock
-                        </div>
-
-                        <div class="fs-4 fw-bold @(_componente.TieneStock ? "text-success" : "text-danger")">
-                            @(_componente.TieneStock
-                                ? $"{_componente.Stock} disponibles"
-                                : "Agotado")
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- compra -->
-            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
-
-                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-
-                    <div>
-                        <div class="small text-muted">
-                            Precio
-                        </div>
-
-                        <div class="display-5 fw-bold text-warning-emphasis">
-                            @_componente.Precio.ToString("C0", _cultura)
-                        </div>
-                    </div>
-
-                    @if (_componente.TieneStock)
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                    @if (!string.IsNullOrWhiteSpace(_componente.UrlImagen))
                     {
-                        <AppButton Variante="@(_enCarrito ? "outline-naranja" : "naranja")"
-                                   OnClick="ToggleCarrito">
-
-                            <i class="bi @(_enCarrito ? "bi-cart-check-fill" : "bi-cart-plus-fill") me-2"></i>
-
-                            @(_enCarrito
-                                ? "En carrito"
-                                : "Agregar al carrito")
-                        </AppButton>
+                        <img src="@_componente.UrlImagen"
+                             alt="@_componente.Nombre"
+                             class="img-fluid mx-auto d-block"
+                             style="max-height:320px;object-fit:contain;" />
                     }
                     else
                     {
-                        <button class="btn btn-secondary btn-lg" disabled>
-                            Sin stock
-                        </button>
+                        <div class="d-flex align-items-center justify-content-center rounded-4 bg-light"
+                             style="height:320px;font-size:5rem;color:#d0d0d0;">
+                            <i class="bi bi-cpu"></i>
+                        </div>
                     }
+                </div>
+            </div>
 
+            <div class="col-lg-7">
+                <span class="badge rounded-pill px-3 py-1 bg-warning-subtle text-warning-emphasis fw-semibold mb-3 small">
+                    @_componente.Categoria
+                </span>
+
+                <h2 class="fw-bold mb-1">@_componente.Nombre</h2>
+
+                <p class="text-secondary small mb-3">
+                    @_componente.Marca · @_componente.Modelo · SKU: @_componente.Sku
+                </p>
+
+                <p class="text-dark mb-4 lh-lg small">@_componente.Descripcion</p>
+
+                @* Stats compactos *@
+                <div class="d-flex gap-2 flex-wrap mb-4">
+                    <div class="stat-chip">
+                        <i class="bi bi-lightning-charge text-naranja me-1"></i>
+                        <span class="fw-semibold">@_componente.ConsumoWatts W</span>
+                        <span class="text-muted ms-1">consumo</span>
+                    </div>
+                    <div class="stat-chip @(_componente.TieneStock ? "stat-chip-ok" : "stat-chip-danger")">
+                        <i class="bi @(_componente.TieneStock ? "bi-check-circle" : "bi-x-circle") me-1"></i>
+                        <span class="fw-semibold">
+                            @(_componente.TieneStock ? $"{_componente.Stock} disponibles" : "Agotado")
+                        </span>
+                    </div>
+                </div>
+
+                @* Precio + acción *@
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+                        <div>
+                            <div class="x-small text-muted text-uppercase mb-1">Precio</div>
+                            <div class="fs-3 fw-bold text-naranja">
+                                @_componente.Precio.ToString("C0", _cultura)
+                            </div>
+                        </div>
+                        @if (_componente.TieneStock)
+                        {
+                            <AppButton Variante="@(_enCarrito ? "outline-naranja" : "naranja")"
+                                       OnClick="ToggleCarrito">
+                                <i class="bi @(_enCarrito ? "bi-cart-check-fill" : "bi-cart-plus-fill") me-2"></i>
+                                @(_enCarrito ? "En carrito" : "Agregar al carrito")
+                            </AppButton>
+                        }
+                        else
+                        {
+                            <button class="btn btn-secondary" disabled>Sin stock</button>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-}
+    }
 </div>
 
 @code {
@@ -161,12 +125,8 @@
     private void ToggleCarrito()
     {
         if (_componente is null) return;
-
-        if (_enCarrito)
-            Carrito.Remover(_componente.Id);
-        else
-            Carrito.Agregar(_componente);
-
+        if (_enCarrito) Carrito.Remover(_componente.Id);
+        else Carrito.Agregar(_componente);
         _enCarrito = !_enCarrito;
     }
 }

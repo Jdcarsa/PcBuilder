@@ -32,7 +32,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 PasswordHash = hashAdmin,
                 Rol = RolUsuario.Administrador,
                 EstaActivo = true,
-                CreadoEn = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                CreadoEn = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             },
             new
             {
@@ -43,7 +43,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 PasswordHash = hashCliente,
                 Rol = RolUsuario.Cliente,
                 EstaActivo = true,
-                CreadoEn = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                CreadoEn = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             }
         );
 

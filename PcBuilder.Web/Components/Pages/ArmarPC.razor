@@ -157,12 +157,6 @@
 
     private async Task Finalizar()
     {
-        if (!Sesion.EstaAutenticado)
-        {
-            Nav.NavigateTo("/login?returnUrl=/armar");
-            return;
-        }
-
         _guardando = true;
         try
         {

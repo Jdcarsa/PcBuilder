@@ -1,0 +1,21 @@
+@page "/pedido-confirmado/{Id:long}"
+
+<PageTitle>Pedido confirmado — PcBuilder</PageTitle>
+
+<div class="container-xl py-5 text-center" style="max-width:520px;margin:0 auto">
+    <i class="bi bi-check-circle-fill text-success display-1 d-block mb-4"></i>
+    <h3 class="fw-bold mb-2">¡Pedido confirmado!</h3>
+    <p class="text-muted mb-1">Tu número de pedido es:</p>
+    <p class="fs-4 fw-black text-naranja mb-4">#@Id</p>
+    <p class="text-muted small mb-4">
+        Gracias por tu compra. Recibirás un correo con los detalles en breve.
+    </p>
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+        <a href="/" class="btn btn-naranja">Volver al inicio</a>
+        <a href="/catalogo" class="btn btn-outline-secondary">Seguir comprando</a>
+    </div>
+</div>
+
+@code {
+    [Parameter] public long Id { get; set; }
+}

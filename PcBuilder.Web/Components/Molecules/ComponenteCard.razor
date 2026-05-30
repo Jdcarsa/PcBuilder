@@ -1,7 +1,7 @@
 @using PcBuilder.Application.DTOs
 @using PcBuilder.Web.Components.Atoms
 
-<div class="card-componente h-100" @onclick="() => OnVerDetalle.InvokeAsync(Componente.Id)">
+<div class="card-componente h-100" @onclick="HandleClick">
     <div class="card-componente-img">
         @if (!string.IsNullOrWhiteSpace(Componente.UrlImagen))
         {
@@ -20,14 +20,29 @@
         <p class="card-componente-marca">@Componente.Marca · @Componente.Modelo</p>
         <div class="card-componente-footer">
             <PrecioTexto Valor="@Componente.Precio" Grande="true" Clase="text-naranja fs-6" />
-            <button class="btn btn-naranja btn-sm rounded-circle d-flex align-items-center justify-content-center"
-                    style="width:36px;height:36px;flex-shrink:0"
-                    @onclick:stopPropagation="true"
-                    @onclick="() => OnAgregarCarrito.InvokeAsync(Componente)"
-                    disabled="@(!Componente.TieneStock)"
-                    title="@(EnCarrito ? "En carrito" : "Agregar al carrito")">
-                <i class="bi @(EnCarrito ? "bi-cart-check" : "bi-cart-plus")"></i>
-            </button>
+
+            @if (ModoSeleccion)
+            {
+                <button class="btn btn-naranja btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                        style="width:36px;height:36px;flex-shrink:0"
+                        @onclick:stopPropagation="true"
+                        @onclick="() => OnSeleccionar.InvokeAsync(Componente)"
+                        disabled="@(!Componente.TieneStock)"
+                        title="Seleccionar">
+                    <i class="bi bi-check-lg"></i>
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-naranja btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                        style="width:36px;height:36px;flex-shrink:0"
+                        @onclick:stopPropagation="true"
+                        @onclick="() => OnAgregarCarrito.InvokeAsync(Componente)"
+                        disabled="@(!Componente.TieneStock)"
+                        title="@(EnCarrito ? "En carrito" : "Agregar al carrito")">
+                    <i class="bi @(EnCarrito ? "bi-cart-check" : "bi-cart-plus")"></i>
+                </button>
+            }
         </div>
         @if (!Componente.TieneStock)
         {
@@ -39,6 +54,16 @@
 @code {
     [Parameter, EditorRequired] public ComponenteResponse Componente { get; set; } = default!;
     [Parameter] public bool EnCarrito { get; set; }
+    [Parameter] public bool ModoSeleccion { get; set; }
     [Parameter] public EventCallback<ComponenteResponse> OnAgregarCarrito { get; set; }
     [Parameter] public EventCallback<long> OnVerDetalle { get; set; }
+    [Parameter] public EventCallback<ComponenteResponse> OnSeleccionar { get; set; }
+
+    private void HandleClick()
+    {
+        if (ModoSeleccion)
+            OnSeleccionar.InvokeAsync(Componente);
+        else
+            OnVerDetalle.InvokeAsync(Componente.Id);
+    }
 }
