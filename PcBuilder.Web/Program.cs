@@ -17,9 +17,12 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddScoped<PcBuilder.Web.Services.CarritoService>();
 builder.Services.AddScoped<PcBuilder.Web.Services.SesionService>();
-builder.Services.AddHttpClient<PcBuilder.Web.Services.ApiClient>(client =>
-    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "/"));
 
+builder.Services.AddHttpClient<PcBuilder.Web.Services.ApiClient>(client =>
+{
+    var url = builder.Configuration["ApiBaseUrl"];
+    client.BaseAddress = new Uri(string.IsNullOrEmpty(url) ? "http://localhost:8080" : url);
+});
 var jwtConfig = builder.Configuration.GetSection("Jwt");
 var secretKey = Encoding.UTF8.GetBytes(jwtConfig["Key"]!);
 
@@ -80,7 +83,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "PcBuilder API v1"));
 }
 
-app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
