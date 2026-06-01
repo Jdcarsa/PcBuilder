@@ -170,7 +170,10 @@ namespace PcBuilder.Infrastructure.Migrations
             modelBuilder.Entity("PcBuilder.Domain.Entities.Pedido", b =>
                 {
                     b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("CreadoEn")
                         .HasColumnType("timestamp with time zone");
@@ -255,6 +258,30 @@ namespace PcBuilder.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("usuarios", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Apellido = "PcBuilder",
+                            CreadoEn = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "admin@pcbuilder.com",
+                            EstaActivo = true,
+                            Nombre = "Admin",
+                            PasswordHash = "$2a$12$jxUf29zG5KbsXiIZD8g/Vu1ea2ojG5mepPmCYZOdZVDSd26aZy6Da",
+                            Rol = "Administrador"
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            Apellido = "Pérez",
+                            CreadoEn = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "juan@correo.com",
+                            EstaActivo = true,
+                            Nombre = "Juan",
+                            PasswordHash = "$2a$12$baQPuYecEt6DaYRnCK8dUefh/5THB.LFsFOcUaYwtWKRN3flG37.O",
+                            Rol = "Cliente"
+                        });
                 });
 
             modelBuilder.Entity("PcBuilder.Domain.Entities.ConfiguracionPC", b =>

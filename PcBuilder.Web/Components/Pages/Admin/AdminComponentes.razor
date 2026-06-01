@@ -326,7 +326,14 @@
 
     private async Task ToggleActivo(ComponenteResponse c)
     {
-        try { await Api.DeleteAsync($"/api/componentes/{c.Id}"); await Cargar(); }
-        catch { }
+        try
+        {
+            await Api.DeleteAsync($"/api/componentes/{c.Id}");
+            await Cargar();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
     }
 }

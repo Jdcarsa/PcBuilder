@@ -3,31 +3,46 @@
 @layout AdminLayout
 @using PcBuilder.Application.DTOs
 @using PcBuilder.Web.Components.Atoms
-@using PcBuilder.Web.Components.Layout
+@using PcBuilder.Web.Helpers
 @using PcBuilder.Web.Services
 @inject ApiClient Api
 @inject NavigationManager Nav
 
 <PageTitle>Pedidos — Admin PcBuilder</PageTitle>
 
-
-
 <div class="admin-page-header">
     <h4 class="admin-page-title">Pedidos</h4>
-    <div class="d-flex gap-2">
-        <select class="form-select form-select-sm w-auto" @bind="_estadoFiltro">
-            <option value="">Todos los estados</option>
-            <option value="Borrador">Borrador</option>
-            <option value="Confirmado">Confirmado</option>
-            <option value="EnProcesamiento">En procesamiento</option>
-            <option value="Enviado">Enviado</option>
-            <option value="Entregado">Entregado</option>
-            <option value="Cancelado">Cancelado</option>
-        </select>
-    </div>
+    <span class="small text-muted">@_pedidos.Count total</span>
 </div>
 
 <div class="card border-0 shadow-sm">
+    <div class="card-header bg-dark py-3 px-3">
+        <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 flex-wrap">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-secondary border-secondary text-white">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input class="form-control form-control-sm bg-secondary border-secondary text-white"
+                       placeholder="Buscar por número..."
+                       @bind="_termino" @bind:event="oninput" />
+            </div>
+            <select class="form-select form-select-sm bg-secondary border-secondary text-white"
+                    style="max-width:180px"
+                    @bind="_estadoFiltro">
+                <option value="">Todos los estados</option>
+                <option value="Borrador">Borrador</option>
+                <option value="Confirmado">Confirmado</option>
+                <option value="EnProcesamiento">En procesamiento</option>
+                <option value="Enviado">Enviado</option>
+                <option value="Entregado">Entregado</option>
+                <option value="Cancelado">Cancelado</option>
+            </select>
+            <span class="text-muted small ms-auto" style="color:#aaa!important">
+                @PedidosFiltrados.Count() resultados
+            </span>
+        </div>
+    </div>
+
     <div class="card-body p-0">
         @if (_cargando)
         {
@@ -35,18 +50,21 @@
         }
         else if (!PedidosFiltrados.Any())
         {
-            <p class="text-muted text-center py-5 small">No hay pedidos.</p>
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                <p class="small">No hay pedidos.</p>
+            </div>
         }
         else
         {
             <div class="table-responsive">
                 <table class="table table-hover mb-0 small">
-                    <thead class="table-light">
+                    <thead class="table-dark">
                         <tr>
-                            <th>Número</th>
-                            <th>Fecha</th>
+                            <th class="ps-3">Pedido</th>
+                            <th class="d-none d-md-table-cell">Fecha</th>
                             <th>Estado</th>
-                            <th>Items</th>
+                            <th class="d-none d-sm-table-cell">Items</th>
                             <th>Total</th>
                             <th></th>
                         </tr>
@@ -54,21 +72,33 @@
                     <tbody>
                         @foreach (var pedido in PedidosFiltrados)
                         {
-                            <tr>
-                                <td class="fw-semibold">@pedido.NumeroPedido</td>
-                                <td class="text-muted">@pedido.CreadoEn.ToString("dd MMM yyyy")</td>
-                                <td>
-                                    <span class="badge @BadgeEstado(pedido.Estado)">@pedido.Estado</span>
+                            <tr style="cursor:pointer" @onclick="() => VerPedido(pedido.Id)">
+                                <td class="ps-3">
+                                    <p class="mb-0 fw-semibold">@pedido.NumeroPedido</p>
+                                    <small class="text-muted d-md-none">
+                                        @pedido.CreadoEn.ToString("dd MMM yyyy")
+                                    </small>
                                 </td>
-                                <td>@pedido.Items.Count</td>
-                                <td class="fw-semibold text-naranja">
+                                <td class="d-none d-md-table-cell text-muted">
+                                    @pedido.CreadoEn.ToString("dd MMM yyyy")
+                                </td>
+                                <td>
+                                    <span class="badge @PedidoUi.Badge(pedido.Estado)">
+                                        @pedido.Estado
+                                    </span>
+                                </td>
+                                <td class="d-none d-sm-table-cell text-muted">
+                                    @pedido.Items.Count prod.
+                                </td>
+                                <td class="fw-semibold text-naranja" style="white-space:nowrap">
                                     @pedido.Total.ToString("C0", _cultura)
                                 </td>
                                 <td>
-                                    <a href="/admin/pedidos/@pedido.Id"
-                                       class="btn btn-outline-secondary btn-sm py-0 px-2">
+                                    <button class="btn btn-outline-secondary btn-sm py-0 px-2"
+                                            @onclick:stopPropagation="true"
+                                            @onclick="() => VerPedido(pedido.Id)">
                                         <i class="bi bi-eye"></i>
-                                    </a>
+                                    </button>
                                 </td>
                             </tr>
                         }
@@ -83,27 +113,22 @@
     private List<PedidoResponse> _pedidos = [];
     private bool _cargando = true;
     private string _estadoFiltro = string.Empty;
+    private string _termino = string.Empty;
 
     private static readonly System.Globalization.CultureInfo _cultura = new("es-CO");
 
     private IEnumerable<PedidoResponse> PedidosFiltrados => _pedidos
-        .Where(p => string.IsNullOrWhiteSpace(_estadoFiltro) || p.Estado == _estadoFiltro)
+        .Where(p => (string.IsNullOrWhiteSpace(_estadoFiltro) || p.Estado == _estadoFiltro) &&
+                    (string.IsNullOrWhiteSpace(_termino) ||
+                     p.NumeroPedido.Contains(_termino, StringComparison.OrdinalIgnoreCase)))
         .OrderByDescending(p => p.CreadoEn);
 
     protected override async Task OnInitializedAsync()
     {
         try { _pedidos = await Api.GetAsync<List<PedidoResponse>>("/api/pedidos/todos") ?? []; }
-        catch { }
+        catch (Exception ex) { Console.WriteLine($"Error: {ex.Message}"); }
         finally { _cargando = false; }
     }
 
-    private static string BadgeEstado(string estado) => estado switch
-    {
-        "Confirmado"      => "bg-primary",
-        "EnProcesamiento" => "bg-warning text-dark",
-        "Enviado"         => "bg-info text-dark",
-        "Entregado"       => "bg-success",
-        "Cancelado"       => "bg-danger",
-        _                 => "bg-secondary"
-    };
+    private void VerPedido(long id) => Nav.NavigateTo("/admin/pedidos/" + id);
 }

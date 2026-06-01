@@ -9,6 +9,11 @@ namespace PcBuilder.Application.Services;
 public class PedidoService(IPedidoRepository pedidoRepo, IComponenteRepository componenteRepo,
     IConfiguracionPCRepository configuracionRepo, IUnitOfWork uow) : IPedidoService
 {
+    public async Task<List<PedidoResponse>> ObtenerTodosAsync(CancellationToken ct = default)
+    {
+        var  pedidos = await pedidoRepo.ObtenerTodosAsync(ct);
+        return pedidos.Select(p => p.ToResponse()).ToList();
+    }
     public async Task<List<PedidoResponse>> ObtenerPorUsuarioAsync(long usuarioId, CancellationToken ct = default)
     {
         var pedidos = await pedidoRepo.ObtenerPorUsuarioAsync(usuarioId, ct);

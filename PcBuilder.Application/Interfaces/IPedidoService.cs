@@ -1,9 +1,11 @@
 using PcBuilder.Application.DTOs;
+using PcBuilder.Domain.Entities;
 
 namespace PcBuilder.Application.Interfaces;
 
 public interface IPedidoService
 {
+    Task<List<PedidoResponse>> ObtenerTodosAsync(CancellationToken ct = default);
     Task<List<PedidoResponse>> ObtenerPorUsuarioAsync(long usuarioId, CancellationToken ct = default);
     Task<PedidoResponse> ObtenerPorIdAsync(long id, CancellationToken ct = default);
     Task<PedidoResponse> CrearAsync(long usuarioId, CrearPedidoRequest request, CancellationToken ct = default);

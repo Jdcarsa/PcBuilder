@@ -13,7 +13,7 @@ public class PedidoConfiguration : IEntityTypeConfiguration<Pedido>
         builder.HasKey(p => p.Id);
 
         builder.Property(p => p.Id)
-            .ValueGeneratedNever();
+            .ValueGeneratedOnAdd();
 
         builder.Property(p => p.NumeroPedido)
             .HasMaxLength(50)

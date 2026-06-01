@@ -4,10 +4,12 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace PcBuilder.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -80,7 +82,8 @@ namespace PcBuilder.Infrastructure.Migrations
                 name: "pedidos",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     NumeroPedido = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     UsuarioId = table.Column<long>(type: "bigint", nullable: false),
                     Estado = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
@@ -154,6 +157,15 @@ namespace PcBuilder.Infrastructure.Migrations
                         principalTable: "pedidos",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "usuarios",
+                columns: new[] { "Id", "Apellido", "CreadoEn", "Email", "EstaActivo", "Nombre", "PasswordHash", "Rol" },
+                values: new object[,]
+                {
+                    { 1L, "PcBuilder", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "admin@pcbuilder.com", true, "Admin", "$2a$12$jxUf29zG5KbsXiIZD8g/Vu1ea2ojG5mepPmCYZOdZVDSd26aZy6Da", "Administrador" },
+                    { 2L, "Pérez", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "juan@correo.com", true, "Juan", "$2a$12$baQPuYecEt6DaYRnCK8dUefh/5THB.LFsFOcUaYwtWKRN3flG37.O", "Cliente" }
                 });
 
             migrationBuilder.CreateIndex(

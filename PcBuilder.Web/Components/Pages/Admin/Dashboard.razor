@@ -5,11 +5,11 @@
 @using PcBuilder.Domain.Enums
 @using PcBuilder.Web.Components.Atoms
 @using PcBuilder.Web.Components.Layout
+@using PcBuilder.Web.Helpers
 @using PcBuilder.Web.Services
 @inject ApiClient Api
 
 <PageTitle>Dashboard — Admin PcBuilder</PageTitle>
-
 
 <div class="admin-page-header">
     <h4 class="admin-page-title">Dashboard</h4>
@@ -25,38 +25,42 @@ else
     <div class="row g-3 mb-4">
         <div class="col-6 col-xl-3">
             <div class="stat-card">
-                <div class="stat-card-icon bg-naranja-light text-naranja">
+                <div class="stat-card-icon" style="background:#FFF0E6;color:#E05C00;">
                     <i class="bi bi-box-seam"></i>
                 </div>
                 <div class="stat-card-value">@_totalPedidos</div>
                 <div class="stat-card-label">Pedidos totales</div>
+                <div class="stat-card-sub">Desde el inicio</div>
             </div>
         </div>
         <div class="col-6 col-xl-3">
             <div class="stat-card">
-                <div class="stat-card-icon" style="background:#fff3cd;color:#e6a817">
+                <div class="stat-card-icon" style="background:#FFF3CD;color:#B87A00;">
                     <i class="bi bi-hourglass-split"></i>
                 </div>
                 <div class="stat-card-value">@_pedidosPendientes</div>
                 <div class="stat-card-label">Por procesar</div>
+                <div class="stat-card-sub">Confirmados</div>
             </div>
         </div>
         <div class="col-6 col-xl-3">
             <div class="stat-card">
-                <div class="stat-card-icon" style="background:#d1fae5;color:#059669">
+                <div class="stat-card-icon" style="background:#D1FAE5;color:#059669;">
                     <i class="bi bi-currency-dollar"></i>
                 </div>
                 <div class="stat-card-value">@_ingresos.ToString("C0", _cultura)</div>
                 <div class="stat-card-label">Ingresos totales</div>
+                <div class="stat-card-sub">Pedidos no cancelados</div>
             </div>
         </div>
         <div class="col-6 col-xl-3">
             <div class="stat-card">
-                <div class="stat-card-icon" style="background:#fee2e2;color:#dc2626">
+                <div class="stat-card-icon" style="background:#FEE2E2;color:#DC2626;">
                     <i class="bi bi-exclamation-triangle"></i>
                 </div>
                 <div class="stat-card-value">@_stockBajo</div>
                 <div class="stat-card-label">Stock bajo</div>
+                <div class="stat-card-sub">Menor a 5 unidades</div>
             </div>
         </div>
     </div>
@@ -64,8 +68,11 @@ else
     <div class="row g-3">
         <div class="col-lg-7">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
-                    <i class="bi bi-clock-history me-2 text-naranja"></i>Últimos pedidos
+                <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                    <span class="small fw-bold text-uppercase letter-spacing-1">
+                        <i class="bi bi-clock-history me-2 text-naranja"></i>Últimos pedidos
+                    </span>
+                    <a href="/admin/pedidos" class="btn btn-link btn-sm text-naranja p-0">Ver todos →</a>
                 </div>
                 <div class="card-body p-0">
                     @if (!_ultimosPedidos.Any())
@@ -82,7 +89,7 @@ else
                                     <small class="text-muted">@pedido.CreadoEn.ToString("dd MMM · HH:mm")</small>
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
-                                    <span class="badge @BadgeEstado(pedido.Estado)">@pedido.Estado</span>
+                                    <span class="badge rounded-pill @PedidoUi.BadgeSutil(pedido.Estado)">@pedido.Estado</span>
                                     <span class="small fw-bold text-naranja">
                                         @pedido.Total.ToString("C0", _cultura)
                                     </span>
@@ -95,18 +102,16 @@ else
                         }
                     }
                 </div>
-                <div class="card-footer bg-white text-end">
-                    <a href="/admin/pedidos" class="btn btn-link btn-sm text-naranja p-0">
-                        Ver todos →
-                    </a>
-                </div>
             </div>
         </div>
 
         <div class="col-lg-5">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
-                    <i class="bi bi-exclamation-circle me-2 text-danger"></i>Stock bajo
+                <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                    <span class="small fw-bold text-uppercase letter-spacing-1">
+                        <i class="bi bi-exclamation-circle me-2 text-danger"></i>Stock bajo
+                    </span>
+                    <a href="/admin/componentes" class="btn btn-link btn-sm text-naranja p-0">Ver componentes →</a>
                 </div>
                 <div class="card-body p-0">
                     @if (!_componentesStockBajo.Any())
@@ -122,15 +127,16 @@ else
                                     <p class="mb-0 small fw-semibold">@c.Nombre</p>
                                     <small class="text-muted">@c.Categoria</small>
                                 </div>
-                                <span class="badge bg-danger">@c.Stock unid.</span>
+                                <span class="badge rounded-pill bg-danger-subtle text-danger">@c.Stock unid.</span>
                             </div>
                         }
                     }
                 </div>
-                <div class="card-footer bg-white text-end">
-                    <a href="/admin/componentes" class="btn btn-link btn-sm text-naranja p-0">
-                        Ver componentes →
-                    </a>
+                <div class="card-footer bg-white">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        @_stockBajo componente@(_stockBajo == 1 ? "" : "s") requiere@(_stockBajo == 1 ? "" : "n") reposición
+                    </small>
                 </div>
             </div>
         </div>
@@ -166,14 +172,4 @@ else
         catch { }
         finally { _cargando = false; }
     }
-
-    private static string BadgeEstado(string estado) => estado switch
-    {
-        "Confirmado"      => "bg-primary",
-        "EnProcesamiento" => "bg-warning text-dark",
-        "Enviado"         => "bg-info text-dark",
-        "Entregado"       => "bg-success",
-        "Cancelado"       => "bg-danger",
-        _                 => "bg-secondary"
-    };
 }

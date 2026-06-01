@@ -8,6 +8,14 @@ namespace PcBuilder.Infrastructure.Repositories;
 
 public class PedidoRepository(AppDbContext db) : IPedidoRepository
 {
+    public async Task<List<Pedido>> ObtenerTodosAsync(CancellationToken ct = default)
+    {
+        return await db.Pedidos
+            .Include(p => p.Items)
+                .ThenInclude(i => i.Componente)
+            .OrderByDescending(p => p.CreadoEn)
+            .ToListAsync(ct);
+    }
     public async Task<Pedido?> ObtenerPorIdAsync(long id, CancellationToken ct = default) =>
         await db.Pedidos
             .Include(p => p.Items)

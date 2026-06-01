@@ -9,156 +9,164 @@
 @inject NavigationManager Nav
 @implements IDisposable
 
-<PageTitle>Checkout — PcBuilder</PageTitle>
+<PageTitle>Pago — PcBuilder</PageTitle>
 
-<div class="container py-4" style="max-width:800px">
-    <h4 class="fw-black text-uppercase mb-4">Finalizar compra</h4>
+<div class="container py-5" style="max-width:920px">
 
     @if (!Carrito.Items.Any())
     {
         <div class="text-center py-5 text-muted">
             <i class="bi bi-cart-x display-4 d-block mb-3"></i>
-            <p>Tu carrito está vacío.</p>
+            <p class="mb-3">Tu carrito está vacío.</p>
             <a href="/catalogo" class="btn btn-naranja">Ver catálogo</a>
         </div>
     }
     else
     {
-        <div class="row g-4">
-            <div class="col-lg-7">
-                
-                @if (!Sesion.EstaAutenticado)
-                {
-                    <div class="card border-0 shadow-sm mb-3">
-                        <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
-                            <i class="bi bi-person me-2 text-naranja"></i>Datos personales
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <AppInput Label="Nombre"
-                                              Placeholder="Juan"
-                                              Valor="@_nombre"
-                                              ValorChanged="v => _nombre = v"
-                                              Error="@(_enviado && string.IsNullOrWhiteSpace(_nombre) ? "Requerido" : "")" />
-                                </div>
-                                <div class="col-6">
-                                    <AppInput Label="Apellido"
-                                              Placeholder="Pérez"
-                                              Valor="@_apellido"
-                                              ValorChanged="v => _apellido = v" />
-                                </div>
-                                <div class="col-12">
-                                    <AppInput Label="Email"
-                                              Type="email"
-                                              Placeholder="tu@email.com"
-                                              Valor="@_email"
-                                              ValorChanged="v => _email = v"
-                                              Error="@(_enviado && string.IsNullOrWhiteSpace(_email) ? "Requerido" : "")" />
-                                </div>
-                            </div>
-                            <div class="alert alert-info small py-2 mt-2 mb-0">
-                                <i class="bi bi-info-circle me-1"></i>
-                                Se creará una cuenta automáticamente con estos datos.
-                            </div>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <div class="card border-0 shadow-sm mb-3">
-                        <div class="card-body d-flex align-items-center gap-3">
-                            <i class="bi bi-person-check-fill text-naranja fs-4"></i>
-                            <div>
-                                <p class="mb-0 fw-semibold">@Sesion.NombreCompleto</p>
-                                <small class="text-muted">@Sesion.Usuario?.Email</small>
-                            </div>
-                        </div>
-                    </div>
-                }
+        <div class="d-flex align-items-center gap-2 mb-4">
+            <a href="/carrito" class="btn btn-link btn-sm text-muted p-0">
+                <i class="bi bi-arrow-left me-1"></i>Volver al carrito
+            </a>
+        </div>
 
-                
-                <div class="card border-0 shadow-sm mb-3">
-                    <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
-                        <i class="bi bi-geo-alt me-2 text-naranja"></i>Dirección de envío
-                    </div>
-                    <div class="card-body">
-                        <Alerta Mensaje="@_error" Tipo="danger" />
-                        <AppInput Label="Dirección completa"
-                                  Placeholder="Calle 123 # 45-67, Barrio, Ciudad"
-                                  Valor="@_direccion"
-                                  ValorChanged="v => _direccion = v"
-                                  Error="@(_enviado && string.IsNullOrWhiteSpace(_direccion) ? "La dirección es requerida." : "")" />
-                        <AppInput Label="Notas para el pedido (opcional)"
-                                  Placeholder="Ej: Dejar en portería, llamar al llegar..."
-                                  Valor="@_notas"
-                                  ValorChanged="v => _notas = v" />
-                    </div>
-                </div>
-                
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
-                        <i class="bi bi-credit-card me-2 text-naranja"></i>Pago
-                    </div>
-                    <div class="card-body">
-                        <div class="alert alert-warning small py-2 mb-3">
-                            <i class="bi bi-shield-check me-1"></i>
-                            Entorno de prueba — usa <strong>4242 4242 4242 4242</strong>
-                        </div>
-                        <div class="row g-2">
+        <div class="row g-4 align-items-start">
+
+            @* ── Formulario ── *@
+            <div class="col-lg-7">
+                <div class="bg-white rounded-4 shadow-sm p-4">
+
+                    <Alerta Mensaje="@_error" Tipo="danger" />
+
+                    @* Datos personales (solo si no está autenticado) *@
+                    @if (!Sesion.EstaAutenticado)
+                    {
+                        <h6 class="fw-bold mb-3" style="font-size:.8rem;text-transform:uppercase;letter-spacing:1px">
+                            Datos de contacto
+                        </h6>
+                        <div class="row g-2 mb-4">
+                            <div class="col-6">
+                                <AppInput Label="Nombre" Placeholder="Juan"
+                                          Valor="@_nombre" ValorChanged="v => _nombre = v"
+                                          Error="@(_enviado && string.IsNullOrWhiteSpace(_nombre) ? "Requerido" : "")" />
+                            </div>
+                            <div class="col-6">
+                                <AppInput Label="Apellido" Placeholder="Pérez"
+                                          Valor="@_apellido" ValorChanged="v => _apellido = v" />
+                            </div>
                             <div class="col-12">
-                                <AppInput Label="Número de tarjeta"
-                                          Placeholder="4242 4242 4242 4242"
-                                          Valor="@_tarjeta"
-                                          ValorChanged="v => _tarjeta = v" />
-                            </div>
-                            <div class="col-6">
-                                <AppInput Label="Vencimiento"
-                                          Placeholder="MM/AA"
-                                          Valor="@_vencimiento"
-                                          ValorChanged="v => _vencimiento = v" />
-                            </div>
-                            <div class="col-6">
-                                <AppInput Label="CVV"
-                                          Placeholder="123"
-                                          Valor="@_cvv"
-                                          ValorChanged="v => _cvv = v" />
+                                <AppInput Label="Email" Type="email" Placeholder="tu@email.com"
+                                          Valor="@_email" ValorChanged="v => _email = v"
+                                          Error="@(_enviado && string.IsNullOrWhiteSpace(_email) ? "Requerido" : "")" />
                             </div>
                         </div>
+                        <hr class="mb-4" />
+                    }
+
+                    @* Dirección *@
+                    <h6 class="fw-bold mb-3" style="font-size:.8rem;text-transform:uppercase;letter-spacing:1px">
+                        Dirección de envío
+                    </h6>
+
+                    <div class="row g-2 mb-4">
+                        <div class="col-12">
+                            <AppInput Label="Dirección" Placeholder="Calle 123 # 45-67"
+                                      Valor="@_direccion" ValorChanged="v => _direccion = v"
+                                      Error="@(_enviado && string.IsNullOrWhiteSpace(_direccion) ? "Requerido" : "")" />
+                        </div>
+                        <div class="col-12">
+                            <AppInput Label="Notas (opcional)" Placeholder="Ej: Dejar en portería, llamar al llegar..."
+                                      Valor="@_notas" ValorChanged="v => _notas = v" />
+                        </div>
+                    </div>
+
+                    <hr class="mb-4" />
+
+                    @* Pago *@
+                    <h6 class="fw-bold mb-3" style="font-size:.8rem;text-transform:uppercase;letter-spacing:1px">
+                        Información de pago
+                    </h6>
+
+                    <div class="rounded-3 px-3 py-2 mb-3 small d-flex align-items-center gap-2"
+                         style="background:#fffbf0;border:1px solid #ffe08a">
+                        <i class="bi bi-info-circle text-warning"></i>
+                        Entorno de prueba — usa <strong class="ms-1">4242 4242 4242 4242</strong>
+                    </div>
+
+                    <div class="row g-2 mb-4">
+                        <div class="col-12">
+                            <AppInput Label="Número de tarjeta" Placeholder="4242 4242 4242 4242"
+                                      Valor="@_tarjeta" ValorChanged="v => _tarjeta = v" />
+                        </div>
+                        <div class="col-7">
+                            <AppInput Label="Vencimiento" Placeholder="MM/AA"
+                                      Valor="@_vencimiento" ValorChanged="v => _vencimiento = v" />
+                        </div>
+                        <div class="col-5">
+                            <AppInput Label="CVV" Placeholder="123"
+                                      Valor="@_cvv" ValorChanged="v => _cvv = v" />
+                        </div>
+                    </div>
+
+                    <AppButton Variante="naranja" Clase="w-100" OnClick="ConfirmarPedido" Cargando="@_procesando">
+                        <i class="bi bi-lock-fill me-2"></i>Confirmar y pagar
+                    </AppButton>
+
+                    <div class="d-flex align-items-center justify-content-center gap-1 mt-3 small text-muted">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        <span>Pago seguro y encriptado</span>
                     </div>
                 </div>
             </div>
 
+            @* ── Resumen ── *@
             <div class="col-lg-5">
-                <div class="card border-0 shadow-sm sticky-top" style="top:80px">
-                    <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
-                        <i class="bi bi-receipt me-2 text-naranja"></i>Resumen
-                    </div>
-                    <div class="card-body p-0">
+                <div class="bg-white rounded-4 shadow-sm p-4 sticky-top" style="top:80px">
+
+                    <h6 class="fw-bold mb-3" style="font-size:.8rem;text-transform:uppercase;letter-spacing:1px">
+                        Resumen del pedido
+                    </h6>
+
+                    <div class="d-flex flex-column gap-3 mb-3">
                         @foreach (var item in Carrito.Items)
                         {
-                            <div class="d-flex justify-content-between px-3 py-2 border-bottom small">
-                                <span class="text-muted">@item.Nombre × @item.Cantidad</span>
-                                <span class="fw-semibold">@item.Subtotal.ToString("C0", _cultura)</span>
+                            <div class="d-flex justify-content-between align-items-center small">
+                                <div>
+                                    <p class="mb-0 fw-semibold" style="color:#111">@item.Nombre</p>
+                                    <span class="text-muted">Cantidad: @item.Cantidad</span>
+                                </div>
+                                <span class="fw-semibold text-naranja ms-3" style="white-space:nowrap">
+                                    @item.Subtotal.ToString("C0", _cultura)
+                                </span>
                             </div>
                         }
-                        <div class="d-flex justify-content-between px-3 py-3">
-                            <span class="fw-bold">Total</span>
-                            <span class="fw-black text-naranja fs-5">
-                                @Carrito.Total.ToString("C0", _cultura)
-                            </span>
-                        </div>
                     </div>
-                    <div class="card-footer bg-white">
-                        <AppButton Variante="naranja" Clase="w-100"
-                                   OnClick="ConfirmarPedido"
-                                   Cargando="@_procesando">
-                            <i class="bi bi-check2-circle me-2"></i>Confirmar pedido
-                        </AppButton>
-                        <a href="/carrito" class="btn btn-link w-100 text-muted small mt-1">
-                            Volver al carrito
-                        </a>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between small text-muted mb-2">
+                        <span>Subtotal (@Carrito.TotalItems productos)</span>
+                        <span>@Carrito.Total.ToString("C0", _cultura)</span>
                     </div>
+                    <div class="d-flex justify-content-between small text-muted mb-3">
+                        <span>Envío y manejo</span>
+                        <span class="text-success fw-semibold">Gratis</span>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="fw-bold">Total del pedido</span>
+                        <span class="fw-black text-naranja fs-5">
+                            @Carrito.Total.ToString("C0", _cultura)
+                        </span>
+                    </div>
+
+                    <p class="text-muted mt-3 mb-0" style="font-size:.75rem">
+                        Al confirmar tu pedido, aceptas nuestros
+                        <a href="#" class="text-naranja text-decoration-none">Términos de uso</a>
+                        y
+                        <a href="#" class="text-naranja text-decoration-none">Política de privacidad</a>.
+                    </p>
                 </div>
             </div>
         </div>
@@ -166,16 +174,16 @@
 </div>
 
 @code {
-    private string _nombre     = string.Empty;
-    private string _apellido   = string.Empty;
-    private string _email      = string.Empty;
-    private string _direccion  = string.Empty;
-    private string _notas      = string.Empty;
-    private string _tarjeta    = "4242 4242 4242 4242";
+    private string _nombre      = string.Empty;
+    private string _apellido    = string.Empty;
+    private string _email       = string.Empty;
+    private string _direccion   = string.Empty;
+    private string _notas       = string.Empty;
+    private string _tarjeta     = "4242 4242 4242 4242";
     private string _vencimiento = "12/26";
-    private string _cvv        = "123";
-    private bool _procesando;
-    private bool _enviado;
+    private string _cvv         = "123";
+    private bool   _procesando;
+    private bool   _enviado;
     private string _error = string.Empty;
 
     private static readonly System.Globalization.CultureInfo _cultura = new("es-CO");
@@ -186,30 +194,30 @@
     private async Task ConfirmarPedido()
     {
         _enviado = true;
-        _error = string.Empty;
+        _error   = string.Empty;
+
         if (string.IsNullOrWhiteSpace(_direccion)) return;
         if (!Sesion.EstaAutenticado && string.IsNullOrWhiteSpace(_nombre)) return;
-        if (!Sesion.EstaAutenticado && string.IsNullOrWhiteSpace(_email)) return;
+        if (!Sesion.EstaAutenticado && string.IsNullOrWhiteSpace(_email))  return;
 
         _procesando = true;
         try
         {
             if (!Sesion.EstaAutenticado)
                 await CrearCuentaYLogin();
-            
+
             var pedido = await Api.PostAsync<PedidoResponse>(
                 "/api/pedidos",
                 new CrearPedidoRequest(
                     _direccion,
                     string.IsNullOrWhiteSpace(_notas) ? null : _notas,
                     null));
-            
+
             foreach (var item in Carrito.Items)
-            {
                 await Api.PostAsync<PedidoResponse>(
                     $"/api/pedidos/{pedido!.Id}/items",
                     new AgregarItemPedidoRequest(item.ComponenteId, item.Cantidad));
-            }
+
             await Api.PostAsync<PedidoResponse>($"/api/pedidos/{pedido!.Id}/confirmar");
 
             Carrito.Limpiar();
@@ -234,14 +242,14 @@
             return;
         }
         catch { }
-        
+
         await Api.PostAsync<UsuarioResponse>(
             "/api/auth/registro",
             new RegistrarUsuarioRequest(
                 _nombre,
                 string.IsNullOrWhiteSpace(_apellido) ? "-" : _apellido,
                 _email,
-                "PcBuilder2025!"));
+                "PcBuilder123!"));
 
         var resultado = await Api.PostAsync<LoginResponse>(
             "/api/auth/login",

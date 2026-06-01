@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @using PcBuilder.Application.DTOs
 @using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Helpers
 @using PcBuilder.Web.Services
 @inject ApiClient Api
 @inject SesionService Sesion
@@ -41,7 +42,7 @@
                                 </small>
                             </div>
                             <div class="d-flex align-items-center gap-3">
-                                <span class="badge @BadgeEstado(pedido.Estado) px-3 py-2">
+                                <span class="badge @PedidoUi.Badge(pedido.Estado) px-3 py-2">
                                     @pedido.Estado
                                 </span>
                                 <span class="fw-bold text-naranja">
@@ -76,6 +77,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (Sesion.EsAdministrador)
+        {
+            Nav.NavigateTo("/admin/pedidos");
+            return;
+        }
+
         try
         {
             _pedidos = await Api.GetAsync<List<PedidoResponse>>("/api/pedidos") ?? [];
@@ -83,15 +90,4 @@
         catch { _pedidos = []; }
         finally { _cargando = false; }
     }
-
-    private static string BadgeEstado(string estado) => estado switch
-    {
-        "Borrador"        => "bg-secondary",
-        "Confirmado"      => "bg-primary",
-        "EnProcesamiento" => "bg-warning text-dark",
-        "Enviado"         => "bg-info text-dark",
-        "Entregado"       => "bg-success",
-        "Cancelado"       => "bg-danger",
-        _                 => "bg-secondary"
-    };
 }

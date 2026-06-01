@@ -5,6 +5,7 @@ namespace PcBuilder.Domain.Interfaces;
 
 public interface IPedidoRepository
 {
+    Task<List<Pedido>> ObtenerTodosAsync(CancellationToken ct = default);
     Task<Pedido?> ObtenerPorIdAsync(long id, CancellationToken ct = default);
     Task<Pedido?> ObtenerPorNumeroAsync(string numeroPedido, CancellationToken ct = default);
     Task<List<Pedido>> ObtenerPorUsuarioAsync(long usuarioId, CancellationToken ct = default);

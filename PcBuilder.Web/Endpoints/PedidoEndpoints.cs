@@ -17,6 +17,15 @@ public static class PedidoEndpoints
         .WithName("GetPedidos")
         .WithSummary("Listar pedidos del usuario")
         .RequireAuthorization();
+        
+        group.MapGet("/todos", async (IPedidoService service, CancellationToken ct) =>
+            {
+                var pedidos = await service.ObtenerTodosAsync(ct);
+                return Results.Ok(pedidos);
+            })
+            .WithName("GetTodosPedidos")
+            .WithSummary("Listar todos los pedidos (Admin)")
+            .RequireAuthorization("SoloAdmin");
 
         group.MapGet("/{id:long}", async (long id, IPedidoService service, CancellationToken ct) =>
         {

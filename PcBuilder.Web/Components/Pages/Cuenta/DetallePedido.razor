@@ -1,7 +1,7 @@
 @page "/cuenta/pedidos/{Id:long}"
-@rendermode InteractiveServer
 @using PcBuilder.Application.DTOs
 @using PcBuilder.Web.Components.Atoms
+@using PcBuilder.Web.Helpers
 @using PcBuilder.Web.Services
 @inject ApiClient Api
 @inject SesionService Sesion
@@ -10,9 +10,9 @@
 <RedirectLogin ReturnUrl="/cuenta/pedidos" />
 <PageTitle>Pedido — PcBuilder</PageTitle>
 
-<div class="container py-4" style="max-width:700px">
-    <a href="/cuenta/pedidos" class="btn btn-link btn-sm text-muted p-0 mb-3">
-        <i class="bi bi-arrow-left me-1"></i>Volver a mis pedidos
+<div class="container py-4" style="max-width:680px">
+    <a href="/cuenta/pedidos" class="d-inline-flex align-items-center gap-2 text-muted text-decoration-none small mb-3">
+        <i class="bi bi-arrow-left"></i> Mis pedidos
     </a>
 
     @if (_cargando)
@@ -25,75 +25,131 @@
     }
     else
     {
-        <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
-            <div>
-                <h5 class="fw-black mb-0">@_pedido.NumeroPedido</h5>
-                <small class="text-muted">
-                    Realizado el @_pedido.CreadoEn.ToString("dd 'de' MMMM yyyy", _cultura)
-                </small>
-            </div>
-            <span class="badge @BadgeEstado(_pedido.Estado) px-3 py-2 fs-6">
-                @_pedido.Estado
-            </span>
-        </div>
+        <div class="card border-0 shadow-sm overflow-hidden">
 
-        <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
-                <i class="bi bi-box-seam me-2 text-naranja"></i>Productos
+            @* Header *@
+            <div class="card-header bg-white d-flex align-items-center justify-content-between py-3 px-4">
+                <div>
+                    <p class="fw-semibold mb-0">@_pedido.NumeroPedido</p>
+                    <small class="text-muted">
+                        Realizado el @_pedido.CreadoEn.ToString("dd 'de' MMMM 'de' yyyy", _cultura)
+                    </small>
+                </div>
+                <span class="badge @PedidoUi.Badge(_pedido.Estado) d-flex align-items-center gap-1 px-3 py-2">
+                    <i class="bi @PedidoUi.Icono(_pedido.Estado)"></i>
+                    @_pedido.Estado
+                </span>
             </div>
-            <div class="card-body p-0">
+
+            @* Timeline *@
+            @if (_pedido.Estado != "Cancelado" && _pedido.Estado != "Borrador")
+            {
+                <div class="px-4 py-3 border-bottom d-flex align-items-center">
+                    @{
+                        var pasos = new[] { "Confirmado", "EnProcesamiento", "Enviado", "Entregado" };
+                        var indexActual = Array.IndexOf(pasos, _pedido.Estado);
+                    }
+                    @for (int i = 0; i < pasos.Length; i++)
+                    {
+                        var paso = pasos[i];
+                        var idx = i;
+                        var hecho = idx <= indexActual;
+                        var actual = idx == indexActual;
+
+                        <div class="d-flex flex-column align-items-center" style="flex:1;min-width:60px">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center mb-1
+                                        @(actual ? "bg-primary text-white" : hecho ? "bg-success text-white" : "bg-light text-muted")"
+                                 style="width:28px;height:28px;font-size:13px;border:1px solid @(actual ? "transparent" : hecho ? "transparent" : "#dee2e6")">
+                                <i class="bi @(hecho ? "bi-check-lg" : PedidoUi.Icono(paso))"></i>
+                            </div>
+                            <span class="text-center @(actual ? "fw-semibold text-primary" : hecho ? "text-success" : "text-muted")"
+                                  style="font-size:10px;line-height:1.3">
+                                @PedidoUi.NombrePaso(paso)
+                            </span>
+                        </div>
+
+                        @if (i < pasos.Length - 1)
+                        {
+                            <div style="flex:1;height:1px;background:@(idx < indexActual ? "#198754" : "#dee2e6");opacity:.5;margin-bottom:18px"></div>
+                        }
+                    }
+                </div>
+            }
+
+            @* Productos *@
+            <div class="px-4 py-3 border-bottom">
+                <p class="small fw-semibold text-uppercase text-muted letter-spacing-1 mb-3">
+                    <i class="bi bi-box-seam me-2 text-naranja"></i>Productos
+                </p>
                 @foreach (var item in _pedido.Items)
                 {
-                    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
                         <div>
                             <p class="mb-0 small fw-semibold">@item.NombreComponente</p>
                             <small class="text-muted">
                                 @item.PrecioUnitario.ToString("C0", _cultura) × @item.Cantidad
                             </small>
                         </div>
-                        <span class="fw-bold text-naranja">
+                        <span class="small fw-semibold text-naranja">
                             @item.Subtotal.ToString("C0", _cultura)
                         </span>
                     </div>
                 }
-                <div class="d-flex justify-content-between align-items-center px-3 py-3">
-                    <span class="fw-bold">Total</span>
-                    <span class="fw-black text-naranja fs-5">
+                <div class="d-flex justify-content-between align-items-center pt-3">
+                    <span class="fw-semibold">Total</span>
+                    <span class="fs-5 fw-black text-naranja">
                         @_pedido.Total.ToString("C0", _cultura)
                     </span>
                 </div>
             </div>
-        </div>
 
-        <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white small fw-bold text-uppercase letter-spacing-1">
-                <i class="bi bi-geo-alt me-2 text-naranja"></i>Envío
+            @* Envío *@
+            <div class="px-4 py-3 @(_pedido.Estado is "Borrador" or "Confirmado" ? "border-bottom" : "")">
+                <p class="small fw-semibold text-uppercase text-muted letter-spacing-1 mb-3">
+                    <i class="bi bi-geo-alt me-2 text-naranja"></i>Envío
+                </p>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <p class="x-small text-muted mb-1">Dirección</p>
+                        <p class="small fw-semibold mb-0">@_pedido.DireccionEnvio</p>
+                    </div>
+                    @if (_pedido.NotasCliente is not null)
+                    {
+                        <div class="col-12">
+                            <p class="x-small text-muted mb-1">Nota</p>
+                            <p class="small mb-0">@_pedido.NotasCliente</p>
+                        </div>
+                    }
+                    @if (_pedido.NumeroGuia is not null)
+                    {
+                        <div class="col-12">
+                            <div class="d-inline-flex align-items-center gap-2 bg-light rounded px-3 py-2 small">
+                                <i class="bi bi-truck text-muted"></i>
+                                Guía de envío: <strong>@_pedido.NumeroGuia</strong>
+                            </div>
+                        </div>
+                    }
+                </div>
             </div>
-            <div class="card-body">
-                <p class="mb-1 small">@_pedido.DireccionEnvio</p>
-                @if (_pedido.NumeroGuia is not null)
-                {
-                    <p class="mb-0 small">
-                        <i class="bi bi-truck me-1 text-naranja"></i>
-                        Número de guía: <strong>@_pedido.NumeroGuia</strong>
-                    </p>
-                }
-                @if (_pedido.NotasCliente is not null)
-                {
-                    <p class="mb-0 small text-muted mt-1">
-                        Nota: @_pedido.NotasCliente
-                    </p>
-                }
-            </div>
-        </div>
 
-        @if (_pedido.Estado == "Borrador" || _pedido.Estado == "Confirmado")
-        {
-            <AppButton Variante="outline-danger" OnClick="Cancelar" Cargando="@_cancelando">
-                <i class="bi bi-x-circle me-1"></i>Cancelar pedido
-            </AppButton>
-            <Alerta Mensaje="@_error" Tipo="danger" />
-        }
+            @* Cancelar *@
+            @if (_pedido.Estado is "Borrador" or "Confirmado")
+            {
+                <div class="px-4 py-3 d-flex align-items-center justify-content-between bg-light">
+                    <span class="small text-muted">¿Hubo algún problema con tu pedido?</span>
+                    <div class="d-flex flex-column align-items-end gap-1">
+                        <AppButton Variante="outline-danger" Tamaño="sm"
+                                   OnClick="Cancelar" Cargando="@_cancelando">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar pedido
+                        </AppButton>
+                        @if (!string.IsNullOrEmpty(_error))
+                        {
+                            <small class="text-danger">@_error</small>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
     }
 </div>
 
@@ -105,15 +161,11 @@
     private bool _cancelando;
     private string _error = string.Empty;
 
-    private static readonly System.Globalization.CultureInfo _cultura =
-        new("es-CO");
+    private static readonly System.Globalization.CultureInfo _cultura = new("es-CO");
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            _pedido = await Api.GetAsync<PedidoResponse>($"/api/pedidos/{Id}");
-        }
+        try { _pedido = await Api.GetAsync<PedidoResponse>($"/api/pedidos/{Id}"); }
         catch { _pedido = null; }
         finally { _cargando = false; }
     }
@@ -122,22 +174,8 @@
     {
         _error = string.Empty;
         _cancelando = true;
-        try
-        {
-            _pedido = await Api.PostAsync<PedidoResponse>($"/api/pedidos/{Id}/cancelar");
-        }
+        try { _pedido = await Api.PostAsync<PedidoResponse>($"/api/pedidos/{Id}/cancelar"); }
         catch (Exception ex) { _error = ex.Message; }
         finally { _cancelando = false; }
     }
-
-    private static string BadgeEstado(string estado) => estado switch
-    {
-        "Borrador"        => "bg-secondary",
-        "Confirmado"      => "bg-primary",
-        "EnProcesamiento" => "bg-warning text-dark",
-        "Enviado"         => "bg-info text-dark",
-        "Entregado"       => "bg-success",
-        "Cancelado"       => "bg-danger",
-        _                 => "bg-secondary"
-    };
 }
